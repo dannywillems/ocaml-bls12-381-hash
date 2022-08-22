@@ -9,7 +9,7 @@ license: "MIT"
 depends: [
   "ocaml" {>= "4.08"}
   "dune" {>= "2.8.4"}
-  "bls12-381" {>=  "4.0.0"}
+  "bls12-381" {>=  "5.0.0"}
   "alcotest" {with-test}
   "bisect_ppx" {with-test & >= "2.5"}
 ]
@@ -20,4 +20,7 @@ x-ci-accept-failures: [
   # because of -Werror
   "centos-7"
   "oraclelinux-7"
+]
+pin-depends: [
+  ["bls12-381.5.0.0" "git+https://gitlab.com/dannywillems/ocaml-bls12-381#5.0.0-rc.0"]
 ]
