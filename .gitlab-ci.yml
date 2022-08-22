@@ -66,6 +66,7 @@ lint-c:
   script:
     - opam install depext --yes
     - opam install . --dry-run --deps-only --locked --with-test --with-doc --yes | awk '/-> installed/{print $3}' | xargs opam depext -iy
+    - opam install "core_bench<=v0.14.1" -y
     - dune build
     - dune build @install
     - dune build @runtest
@@ -157,6 +158,7 @@ build:
   script:
     - opam install depext --yes
     - opam install . --dry-run --deps-only --locked --with-test --with-doc --yes | awk '/-> installed/{print $3}' | xargs opam depext -iy
+    - opam install "core_bench<=v0.14.1" -y
     - dune build
   rules:
     - when: always
