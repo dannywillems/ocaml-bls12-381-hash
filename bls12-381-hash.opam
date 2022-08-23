@@ -21,6 +21,3 @@ x-ci-accept-failures: [
   "centos-7"
   "oraclelinux-7"
 ]
-pin-depends: [
-  ["bls12-381.5.0.0" "git+https://gitlab.com/dannywillems/ocaml-bls12-381#5.0.0-rc.0"]
-]
