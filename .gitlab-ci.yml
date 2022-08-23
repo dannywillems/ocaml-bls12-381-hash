@@ -156,10 +156,18 @@ build:
     - opam --version
     - echo $OPAM_SWITCH_PREFIX
   script:
+
     - opam install depext --yes
     - opam install . --dry-run --deps-only --locked --with-test --with-doc --yes | awk '/-> installed/{print $3}' | xargs opam depext -iy
     - opam install "core_bench<=v0.14.1" -y
     - dune build
+    # For doc
+    - opam install odoc -y
+    - dune build @doc
+    - cp -r _build/default/_doc/_html _odoc/
+  artifacts:
+    paths:
+      - _odoc
   rules:
     - when: always
 
@@ -290,21 +298,6 @@ opam-install-and-remove-local-switch:
     - opam install bls12-381-hash.dev -y -v --deps-only
     - opam install bls12-381-hash.dev -y -v
     - opam remove -a -y bls12-381-hash.dev
-  rules:
-    - when: always
-
-doc:
-  <<: *job_with_cache
-  stage: doc
-  before_script:
-    - eval $(opam env)
-    - opam install odoc -y
-  script:
-    - dune build @doc
-    - cp -r _build/default/_doc/_html _odoc/
-  artifacts:
-    paths:
-      - _odoc
   rules:
     - when: always
 
