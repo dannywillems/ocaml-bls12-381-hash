@@ -1,5 +1,7 @@
 # OCaml implementation of BLS12-381
 
+**Use with caution before release 1.0.0**
+
 This library provides a fast implementation of:
 - an instantiation of
   [Poseidon](https://eprint.iacr.org/2019/458.pdf) providing a security of
