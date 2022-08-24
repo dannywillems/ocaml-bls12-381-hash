@@ -182,6 +182,7 @@ build:
   before_script:
     # Always update system package manager + setup OPAM env
     - eval $(opam env)
+    - opam repository set-url default https://opam.ocaml.org
     - opam update
     # List versions and environments
     - ocaml --version
