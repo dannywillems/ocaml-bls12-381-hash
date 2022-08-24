@@ -57,6 +57,7 @@ lint-c:
     # Always update system package manager + setup OPAM env
     - sudo apt-get update
     - eval $(opam env)
+    - opam repository set-url default https://opam.ocaml.org
     - opam update
 
     # List versions and environments
