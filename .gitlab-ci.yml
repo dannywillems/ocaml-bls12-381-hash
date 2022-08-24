@@ -149,6 +149,7 @@ build:
     - sudo apt-get update
     - "[ -d _opam ] || opam switch create --yes --no-install . $OCAML_COMPILER"
     - eval $(opam env)
+    - opam repository set-url default https://opam.ocaml.org
     - opam update
 
     # List versions and environments
