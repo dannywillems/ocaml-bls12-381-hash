@@ -20,9 +20,19 @@ This library provides a fast implementation of:
 
 ## Install
 
+### Use a local switch for development
+```
+opam switch create ./ 4.14.0
+dune build
+```
+
+### Install in an existing local switch
 
 ```shell
+# for the latest published version in ocaml/opam-repository
 opam install bls12-381-hash
+# for the dev version
+opam pin add bls12-381-hash.dev git+https://gitlab.com/dannywillems/ocaml-bls12-381-hash\#main
 ```
 
 ## Run tests
