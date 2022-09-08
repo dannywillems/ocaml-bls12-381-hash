@@ -44,4 +44,5 @@ The current implementation uses additional primitives built over blst added by
 `blst_fr_pow`. It will get removed later when the addition chain will be
 implemented.
 Therefore, you need to install first the OCaml package bls12-381. Simply follow
-the instruction in the README of tis repository to install a compatible version.
+the instruction in the README at the root of this repository to install a
+compatible version.
