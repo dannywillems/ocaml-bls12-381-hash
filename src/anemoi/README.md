@@ -41,7 +41,7 @@ gcc \
 
 The current implementation uses additional primitives built over blst added by
 [ocaml-bls12-381](https://gitlab.com/dannywillems/ocaml-bls12-381) like
-`blst_fr_pow`. It will get removed later when the additional chain will be
+`blst_fr_pow`. It will get removed later when the addition chain will be
 implemented.
 Therefore, you need to install first the OCaml package bls12-381. Simply follow
 the instruction in the README of tis repository to install a compatible version.
