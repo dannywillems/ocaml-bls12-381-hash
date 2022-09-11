@@ -5,12 +5,6 @@
 blst_fr RESCUE_ARK[NB_CONSTANTS];
 blst_fr RESCUE_MDS[WIDTH][WIDTH];
 
-byte ALPHA_INV_BYTES[32] = {
-    205, 204, 204, 204, 50,  51, 51, 51,  153, 241, 152, 153, 103, 14, 127, 33,
-    2,   240, 115, 157, 105, 86, 74, 225, 28,  50,  114, 221, 186, 15, 95,  46};
-
-int ALPHA_INV_NB_BITS = 254;
-
 size_t rescue_ctxt_sizeof() { return sizeof(rescue_ctxt_t); }
 
 int rescue_constants_init(blst_fr *ark, blst_fr **mds, int ark_len,

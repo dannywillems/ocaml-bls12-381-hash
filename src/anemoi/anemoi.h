@@ -89,19 +89,6 @@ static blst_fr DELTA = {.l = {15811494917868205788ul, 16624336857528583898ul,
 static blst_fr ALPHA = {.l = {47244640245ul, 7411222800919301131ul,
                               14736824336091166661ul, 345034914438815205ul}};
 
-// alpha^(-1) =
-// 20974350070050476191779096203274386335076221000211055129041463479975432473805
-static blst_fr ALPHA_INV = {.l = {18446744067696597403ul, 4758474357211404900ul,
-                                  16235752902321411284ul,
-                                  8005574788508318769ul}};
-
-// Will be used to call blst_fr_pow
-static byte ALPHA_INV_BYTES[32] = {
-    205, 204, 204, 204, 50,  51, 51, 51,  153, 241, 152, 153, 103, 14, 127, 33,
-    2,   240, 115, 157, 105, 86, 74, 225, 28,  50,  114, 221, 186, 15, 95,  46};
-
-static int ALPHA_INV_NUMBITS = 254;
-
 // These values depend on the input size
 static blst_fr ANEMOI_JIVE_ROUND_CONSTANTS_128BITS_INPUT_SIZE_1[NB_CONSTANTS_128BITS_INPUT_SIZE_1] = {
     // We interleave the constants C and D two by two
