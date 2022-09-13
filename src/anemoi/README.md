@@ -33,16 +33,7 @@ gcc \
   -o main \
   anemoi.c main.c \
   -lblst \
-  -lbls12_381_stubs \
   -I$(pwd) \
   -I$OPAM_SWITCH_PREFIX/lib/bls12-381 \
   -L$OPAM_SWITCH_PREFIX/lib/bls12-381
 ```
-
-The current implementation uses additional primitives built over blst added by
-[ocaml-bls12-381](https://gitlab.com/dannywillems/ocaml-bls12-381) like
-`blst_fr_pow`. It will get removed later when the addition chain will be
-implemented.
-Therefore, you need to install first the OCaml package bls12-381. Simply follow
-the instruction in the README at the root of this repository to install a
-compatible version.
