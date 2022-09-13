@@ -14,6 +14,10 @@
 
 (copy_files rescue/{rescue.h,rescue.c})
 
+(copy_files bindings/griffin/{caml_griffin_stubs.c})
+
+(copy_files griffin/{griffin.h,griffin.c})
+
 (library
  (public_name bls12-381-hash)
  (name bls12_381_hash)
@@ -24,4 +28,5 @@
  (foreign_stubs
   (language c)
   (names caml_poseidon128_stubs poseidon128 caml_anemoi_stubs anemoi
-    caml_poseidon_stubs poseidon caml_rescue_stubs rescue)))
+    caml_poseidon_stubs poseidon caml_rescue_stubs rescue caml_griffin_stubs
+    griffin)))

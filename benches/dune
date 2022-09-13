@@ -3,5 +3,5 @@
 (copy_files ../test/{rescue_ark.ml,rescue_mds.ml})
 
 (executables
- (names bench_poseidon128 bench_rescue bench_anemoi)
+ (names bench_poseidon128 bench_rescue bench_anemoi bench_griffin)
  (libraries bls12-381 bls12-381-hash core core_bench))

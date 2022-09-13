@@ -119,3 +119,26 @@ end
 module Anemoi : sig
   val jive128_1_compress : Bls12_381.Fr.t -> Bls12_381.Fr.t -> Bls12_381.Fr.t
 end
+
+(** Implementation of an instantiation of {{: https://eprint.iacr.org/2022/403.pdf }
+    Griffin } over the scalar field of BLS12-381 for a security of 128 bits and
+    with the permutation [x^5]. The parameters of the instantiation are:
+    - state size = 3
+    - number of rounds = 12
+*)
+module Griffin : sig
+  (** Context of the permutation *)
+  type ctxt
+
+  (** [init a b c] returns a new context with an initialised state with the
+      value [[a, b, c]].
+  *)
+  val init : Bls12_381.Fr.t -> Bls12_381.Fr.t -> Bls12_381.Fr.t -> ctxt
+
+  (** [apply_permutation ctxt] applies a permutation on the state. The context
+      is modified. *)
+  val apply_permutation : ctxt -> unit
+
+  (** [get ctxt] returns the state of the permutation *)
+  val get : ctxt -> Bls12_381.Fr.t * Bls12_381.Fr.t * Bls12_381.Fr.t
+end
