@@ -115,8 +115,17 @@ module Rescue : sig
 end
 
 (** Implementation of an instanciation of {{: https://eprint.iacr.org/2022/840}
-    AnemoiJive2 } over the scalar field of BLS12-381 for a security of 128 bits.*)
+    AnemoiJive2 } over the scalar field of BLS12-381 for a security of 128 bits.
+*)
 module Anemoi : sig
+  type ctxt
+
+  val allocate_ctxt : int -> Bls12_381.Fr.t array -> ctxt
+
+  val get_state : ctxt -> Bls12_381.Fr.t array
+
+  val apply : ctxt -> unit
+
   val jive128_1_compress : Bls12_381.Fr.t -> Bls12_381.Fr.t -> Bls12_381.Fr.t
 end
 
