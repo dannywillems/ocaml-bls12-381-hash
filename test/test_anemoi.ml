@@ -261,6 +261,110 @@ let test_vectors_jive128_3 () =
           y3_s)
     vectors
 
+let test_vectors_jive128_4 () =
+  let vectors =
+    [ ( ("0", "0", "0", "0", "0", "0", "0", "0"),
+        ( "20058366947742027461261618053378486897639165785263468047794626116830259214929",
+          "3006530361801509761803565054177969548426284732824647555577346524284019810273",
+          "39978152086459459913929936073499443510474497827320187307674983143812044272930",
+          "4895666656380827889572108138173239080130380149736559292021613130458381719055",
+          "16846871674127449893991780290122986523839084467768029039775935673789966991114",
+          "1865764240623238114365321595564222339828258066912403716100532136924909750491",
+          "28286625493572404257902925017723700828588002224405595494780300921501891705465",
+          "19209453401074378098932473108206183579121797186137438752451926263449203411777"
+        ) ) ]
+  in
+
+  List.iter
+    (fun ( (x1_s, x2_s, x3_s, x4_s, y1_s, y2_s, y3_s, y4_s),
+           ( exp_res_x1_s,
+             exp_res_x2_s,
+             exp_res_x3_s,
+             exp_res_x4_s,
+             exp_res_y1_s,
+             exp_res_y2_s,
+             exp_res_y3_s,
+             exp_res_y4_s ) ) ->
+      let l = 4 in
+      let x1 = Bls12_381.Fr.of_string x1_s in
+      let x2 = Bls12_381.Fr.of_string x2_s in
+      let x3 = Bls12_381.Fr.of_string x3_s in
+      let x4 = Bls12_381.Fr.of_string x4_s in
+      let y1 = Bls12_381.Fr.of_string y1_s in
+      let y2 = Bls12_381.Fr.of_string y2_s in
+      let y3 = Bls12_381.Fr.of_string y3_s in
+      let y4 = Bls12_381.Fr.of_string y4_s in
+      let exp_res_x1 = Bls12_381.Fr.of_string exp_res_x1_s in
+      let exp_res_x2 = Bls12_381.Fr.of_string exp_res_x2_s in
+      let exp_res_x3 = Bls12_381.Fr.of_string exp_res_x3_s in
+      let exp_res_x4 = Bls12_381.Fr.of_string exp_res_x4_s in
+      let exp_res_y1 = Bls12_381.Fr.of_string exp_res_y1_s in
+      let exp_res_y2 = Bls12_381.Fr.of_string exp_res_y2_s in
+      let exp_res_y3 = Bls12_381.Fr.of_string exp_res_y3_s in
+      let exp_res_y4 = Bls12_381.Fr.of_string exp_res_y4_s in
+      let state = [| x1; x2; x3; x4; y1; y2; y3; y4 |] in
+      let ctxt = Bls12_381_hash.Anemoi.allocate_ctxt l state in
+      let () = Bls12_381_hash.Anemoi.apply ctxt in
+      let output = Bls12_381_hash.Anemoi.get_state ctxt in
+      let res_x1, res_x2, res_x3, res_x4, res_y1, res_y2, res_y3, res_y4 =
+        ( output.(0),
+          output.(1),
+          output.(2),
+          output.(3),
+          output.(4),
+          output.(5),
+          output.(6),
+          output.(7) )
+      in
+      let res_x1_s = Bls12_381.Fr.to_string res_x1 in
+      let res_x2_s = Bls12_381.Fr.to_string res_x2 in
+      let res_x3_s = Bls12_381.Fr.to_string res_x3 in
+      let res_x4_s = Bls12_381.Fr.to_string res_x4 in
+      let res_y1_s = Bls12_381.Fr.to_string res_y1 in
+      let res_y2_s = Bls12_381.Fr.to_string res_y2 in
+      let res_y3_s = Bls12_381.Fr.to_string res_y3 in
+      let res_y4_s = Bls12_381.Fr.to_string res_y4 in
+      let is_eq =
+        Bls12_381.Fr.eq res_x1 exp_res_x1
+        && Bls12_381.Fr.eq res_x2 exp_res_x2
+        && Bls12_381.Fr.eq res_x3 exp_res_x3
+        && Bls12_381.Fr.eq res_x4 exp_res_x4
+        && Bls12_381.Fr.eq res_y1 exp_res_y1
+        && Bls12_381.Fr.eq res_y2 exp_res_y2
+        && Bls12_381.Fr.eq res_y3 exp_res_y3
+        && Bls12_381.Fr.eq res_y4 exp_res_y4
+      in
+      if not is_eq then
+        Alcotest.failf
+          "Expected result = (%s, %s, %s, %s, %s, %s, %s, %s), computed result \
+           = (%s, %s, %s, %s, %s, %s, %s, %s), input = (%s, %s, %s, %s, %s, \
+           %s, %s, %s)"
+          exp_res_x1_s
+          exp_res_x2_s
+          exp_res_x3_s
+          exp_res_x4_s
+          exp_res_y1_s
+          exp_res_y2_s
+          exp_res_y3_s
+          exp_res_y4_s
+          res_x1_s
+          res_x2_s
+          res_x3_s
+          res_x4_s
+          res_y1_s
+          res_y2_s
+          res_y3_s
+          res_y4_s
+          x1_s
+          x2_s
+          x3_s
+          x4_s
+          y1_s
+          y2_s
+          y3_s
+          y4_s)
+    vectors
+
 let test_state_functions () =
   let l = 1 + Random.int 10 in
   let mds =
@@ -306,6 +410,10 @@ let () =
             "l = 2 -> tests vectors from reference implementation"
             `Quick
             test_vectors_jive128_2;
+          test_case
+            "l = 4 -> tests vectors from reference implementation"
+            `Quick
+            test_vectors_jive128_4;
           test_case
             "l = 3 -> tests vectors from reference implementation"
             `Quick
