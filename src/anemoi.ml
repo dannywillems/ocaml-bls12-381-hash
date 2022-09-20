@@ -14,14 +14,23 @@ module Stubs = struct
   external anemoi_jive_apply : ctxt -> unit
     = "caml_bls12_381_hash_anemoi_jive_apply_stubs"
 
-  external anemoi_jive_allocate_ctxt : int -> Bls12_381.Fr.t array -> ctxt
-    = "caml_bls12_381_hash_anemoi_jive_allocate_ctxt_stubs"
+  external anemoi_jive_allocate_ctxt :
+    ?mds:Bls12_381.Fr.t array array ->
+    ?constants:Bls12_381.Fr.t array ->
+    int ->
+    Bls12_381.Fr.t array ->
+    ctxt = "caml_bls12_381_hash_anemoi_jive_allocate_ctxt_stubs"
 end
 
 type ctxt = Stubs.ctxt
 
-let allocate_ctxt size init_values =
-  let ctxt = Stubs.anemoi_jive_allocate_ctxt size init_values in
+let allocate_ctxt ?mds ?constants size init_values =
+  if size <= 0 then failwith "Size must be at least 1" ;
+  if size > 4 && (Option.is_none mds || Option.is_none constants) then
+    failwith
+      "For instances with l > 4 the constants and the matrix for the linear \
+       layer must be given" ;
+  let ctxt = Stubs.anemoi_jive_allocate_ctxt ?mds ?constants size init_values in
   ctxt
 
 let get_state ctxt =

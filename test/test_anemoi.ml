@@ -66,7 +66,13 @@ let test_vectors_jive128_1 () =
 
 let test_vectors_jive128_2 () =
   let vectors =
-    [ ( ( "27839080182556610705887939966818701340864145322792715287810357208440914854281",
+    [ ( ("0", "0", "0", "0"),
+        ( "23506137766702864106501714498337645198425779982503345533323642665774237530743",
+          "34447732706544914382845425456929395985238811287211171548953979792382042373740",
+          "38305963246199256223939132687221377996807495295070124114622442403207046030062",
+          "52085062252809860097055957733590114937197370490476211931083350477393806117621"
+        ) );
+      ( ( "27839080182556610705887939966818701340864145322792715287810357208440914854281",
           "41481150764080331637382663225726959872938887013456865948198868284552242708519",
           "38189883379737770191491270513853770942621403161576272820058113505808823630900",
           "6529435419442382849730797362349015216552820358285062739653681825023447217068"
@@ -101,6 +107,9 @@ let test_vectors_jive128_2 () =
   List.iter
     (fun ( (x1_s, x2_s, y1_s, y2_s),
            (exp_res_x1_s, exp_res_x2_s, exp_res_y1_s, exp_res_y2_s) ) ->
+      let l = 2 in
+      let mds = Anemoi_jive_parameters.Jive2_128.mds in
+      let constants = Anemoi_jive_parameters.Jive2_128.constants in
       let x1 = Bls12_381.Fr.of_string x1_s in
       let x2 = Bls12_381.Fr.of_string x2_s in
       let y1 = Bls12_381.Fr.of_string y1_s in
@@ -110,7 +119,7 @@ let test_vectors_jive128_2 () =
       let exp_res_y1 = Bls12_381.Fr.of_string exp_res_y1_s in
       let exp_res_y2 = Bls12_381.Fr.of_string exp_res_y2_s in
       let state = [| x1; x2; y1; y2 |] in
-      let ctxt = Bls12_381_hash.Anemoi.allocate_ctxt 2 state in
+      let ctxt = Bls12_381_hash.Anemoi.allocate_ctxt ~mds ~constants l state in
       let () = Bls12_381_hash.Anemoi.apply ctxt in
       let output = Bls12_381_hash.Anemoi.get_state ctxt in
       let res_x1, res_x2, res_y1, res_y2 =
@@ -192,6 +201,9 @@ let test_vectors_jive128_3 () =
              exp_res_y1_s,
              exp_res_y2_s,
              exp_res_y3_s ) ) ->
+      let l = 3 in
+      let constants = Anemoi_jive_parameters.Jive3_128.constants in
+      let mds = Anemoi_jive_parameters.Jive3_128.mds in
       let x1 = Bls12_381.Fr.of_string x1_s in
       let x2 = Bls12_381.Fr.of_string x2_s in
       let x3 = Bls12_381.Fr.of_string x3_s in
@@ -205,7 +217,7 @@ let test_vectors_jive128_3 () =
       let exp_res_y2 = Bls12_381.Fr.of_string exp_res_y2_s in
       let exp_res_y3 = Bls12_381.Fr.of_string exp_res_y3_s in
       let state = [| x1; x2; x3; y1; y2; y3 |] in
-      let ctxt = Bls12_381_hash.Anemoi.allocate_ctxt 3 state in
+      let ctxt = Bls12_381_hash.Anemoi.allocate_ctxt ~mds ~constants l state in
       let () = Bls12_381_hash.Anemoi.apply ctxt in
       let output = Bls12_381_hash.Anemoi.get_state ctxt in
       let res_x1, res_x2, res_x3, res_y1, res_y2, res_y3 =
@@ -251,9 +263,16 @@ let test_vectors_jive128_3 () =
 
 let test_state_functions () =
   let l = 1 + Random.int 10 in
+  let mds =
+    Array.init l (fun _ -> Array.init l (fun _ -> Bls12_381.Fr.random ()))
+  in
+  let nb_rounds = if l = 1 then 19 else if l = 2 then 12 else 10 in
+  let constants =
+    Array.init (2 * l * nb_rounds) (fun _ -> Bls12_381.Fr.random ())
+  in
   let state_size = 2 * l in
   let state = Array.init state_size (fun _ -> Bls12_381.Fr.random ()) in
-  let ctxt = Bls12_381_hash.Anemoi.allocate_ctxt l state in
+  let ctxt = Bls12_381_hash.Anemoi.allocate_ctxt ~mds ~constants l state in
   let output = Bls12_381_hash.Anemoi.get_state ctxt in
   assert (Array.for_all2 Bls12_381.Fr.eq state output)
 

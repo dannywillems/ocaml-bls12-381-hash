@@ -120,7 +120,12 @@ end
 module Anemoi : sig
   type ctxt
 
-  val allocate_ctxt : int -> Bls12_381.Fr.t array -> ctxt
+  val allocate_ctxt :
+    ?mds:Bls12_381.Fr.t array array ->
+    ?constants:Bls12_381.Fr.t array ->
+    int ->
+    Bls12_381.Fr.t array ->
+    ctxt
 
   val get_state : ctxt -> Bls12_381.Fr.t array
 

@@ -12,10 +12,11 @@
 #include <string.h>
 
 typedef struct anemoi_ctxt_s {
-  // State
-  blst_fr *state;
   // state_size := m = 2 * l
   int l;
+  int nb_rounds;
+  // State + MDS + constants
+  blst_fr *ctxt;
 } anemoi_ctxt_t;
 
 /*
@@ -91,10 +92,6 @@ static blst_fr BETA = {.l = {64424509425ul, 1721329240476523535ul,
 // 14981678621464625851270783002338847382197300714436467949315331057125308909861
 static blst_fr DELTA = {.l = {15811494917868205788ul, 16624336857528583898ul,
                               17920762862402342329ul, 7408687358795335574ul}};
-
-// alpha = 5
-static blst_fr ALPHA = {.l = {47244640245ul, 7411222800919301131ul,
-                              14736824336091166661ul, 345034914438815205ul}};
 
 // These values depend on the input size
 static blst_fr ANEMOI_JIVE_ROUND_CONSTANTS_128BITS_INPUT_SIZE_1[NB_CONSTANTS_128BITS_INPUT_SIZE_1] = {
@@ -253,7 +250,6 @@ static blst_fr ANEMOI_JIVE_ROUND_CONSTANTS_128BITS_INPUT_SIZE_1[NB_CONSTANTS_128
            8451328163049581367ul, 4860546105390490080ul}}
 
 };
-
 static blst_fr ANEMOI_ROUND_CONSTANTS_C[76] = {
     // C0
     // 39
