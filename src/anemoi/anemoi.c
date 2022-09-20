@@ -147,70 +147,68 @@ void anemoi_jive_3_apply_linear_layer(blst_fr *ctxt) {
 
 // l = 4
 void anemoi_jive_4_apply_matrix(blst_fr *ctxt) {
-  blst_fr g_x0;
-  blst_fr x0_copy;
   blst_fr g_x1;
+  blst_fr g_square_x1;
+  blst_fr g_x0;
+  blst_fr g_square_x0;
+  blst_fr g_x3;
   blst_fr g_x2;
-  blst_fr x2_copy;
-  blst_fr g_square_x2;
-  blst_fr g_square_x3;
-
-  memcpy(&x0_copy, ctxt, sizeof(blst_fr));
-  memcpy(&x2_copy, ctxt + 2, sizeof(blst_fr));
+  blst_fr tmp;
 
   anemoi_fr_multiply_by_g(&g_x0, ctxt);
+  anemoi_fr_multiply_by_g(&g_square_x0, &g_x0);
+
   anemoi_fr_multiply_by_g(&g_x1, ctxt + 1);
+  anemoi_fr_multiply_by_g(&g_square_x1, &g_x1);
+
   anemoi_fr_multiply_by_g(&g_x2, ctxt + 2);
-  anemoi_fr_multiply_by_g(&g_square_x2, &g_x2);
-  anemoi_fr_multiply_by_g_square(&g_square_x3, ctxt + 3);
 
-  // x_0 <- (g + 1) x_0 + x_1 + g^2 x_2 + g^2 x_3
-  blst_fr_add(ctxt, &g_x0, ctxt);
-  blst_fr_add(ctxt, ctxt, ctxt + 1);
-  blst_fr_add(ctxt, ctxt, &g_square_x2);
-  blst_fr_add(ctxt, ctxt, &g_square_x3);
+  anemoi_fr_multiply_by_g(&g_x3, ctxt + 3);
 
-  // x_1 <- x_0 + (g + 1) x_1 + (g^2 + g) x_2 + g^2 x_3
-  blst_fr_add(ctxt + 1, ctxt + 1, &x0_copy);
+  // Copy x_1 for x_0 later
+  memcpy(&tmp, ctxt + 1, sizeof(blst_fr));
+
   blst_fr_add(ctxt + 1, ctxt + 1, &g_x1);
+  blst_fr_add(ctxt + 1, ctxt + 1, ctxt);
   blst_fr_add(ctxt + 1, ctxt + 1, &g_x2);
-  blst_fr_add(ctxt + 1, ctxt + 1, &g_square_x2);
-  blst_fr_add(ctxt + 1, ctxt + 1, &g_square_x3);
+  blst_fr_add(ctxt + 1, ctxt + 1, &g_x3);
 
-  // x_2 <- g x_0 + g x_1 + (g + 1) x_2 + x_3
+  blst_fr_add(ctxt, ctxt, &g_x0);
+  blst_fr_add(ctxt, ctxt, &tmp);
+  blst_fr_add(ctxt, ctxt, &g_x2);
+  blst_fr_add(ctxt, ctxt, &g_x3);
+  blst_fr_add(ctxt, ctxt, ctxt + 3);
+
+  // Copy x_2 for x_3 later
+  memcpy(&tmp, ctxt + 2, sizeof(blst_fr));
   blst_fr_add(ctxt + 2, ctxt + 2, &g_x2);
+  blst_fr_add(ctxt + 2, ctxt + 2, &g_square_x1);
   blst_fr_add(ctxt + 2, ctxt + 2, &g_x1);
-  blst_fr_add(ctxt + 2, ctxt + 2, &g_x0);
   blst_fr_add(ctxt + 2, ctxt + 2, ctxt + 3);
 
-  // x_3 <- (g + 1) x_0 + g x_1 + x_2 + (g + 1) x_3
-  anemoi_fr_multiply_by_g_plus_one(ctxt + 3, ctxt + 3);
-  blst_fr_add(ctxt + 3, ctxt + 3, &x2_copy);
-  blst_fr_add(ctxt + 3, ctxt + 3, &g_x1);
-  blst_fr_add(ctxt + 3, ctxt + 3, &g_x0);
-  blst_fr_add(ctxt + 3, ctxt + 3, &x0_copy);
+  blst_fr_add(ctxt + 3, ctxt + 3, &g_x3);
+  blst_fr_add(ctxt + 3, ctxt + 3, &g_square_x0);
+  blst_fr_add(ctxt + 3, ctxt + 3, &g_square_x1);
+  blst_fr_add(ctxt + 3, ctxt + 3, &tmp);
 }
 
 void anemoi_jive_4_apply_linear_layer(blst_fr *ctxt) {
+  blst_fr *state_x = ctxt;
+  blst_fr *state_y = state_x + 4;
+
   blst_fr tmp_y0;
-  blst_fr tmp_y1;
-  blst_fr tmp_y2;
-  blst_fr tmp_y3;
 
-  anemoi_jive_4_apply_matrix(ctxt);
+  anemoi_jive_4_apply_matrix(state_x);
 
-  memcpy(&tmp_y0, ctxt + 4, sizeof(blst_fr));
-  memcpy(&tmp_y1, ctxt + 4 + 1, sizeof(blst_fr));
-  memcpy(&tmp_y2, ctxt + 4 + 2, sizeof(blst_fr));
-  memcpy(&tmp_y3, ctxt + 4 + 3, sizeof(blst_fr));
+  memcpy(&tmp_y0, state_y, sizeof(blst_fr));
+  for (int i = 0; i < 3; i++) {
+    memcpy(state_y, state_y + 1, sizeof(blst_fr));
+  }
+  memcpy(state_y + 3, &tmp_y0, sizeof(blst_fr));
 
-  memcpy(ctxt + 4, &tmp_y1, sizeof(blst_fr));
-  memcpy(ctxt + 4 + 1, &tmp_y2, sizeof(blst_fr));
-  memcpy(ctxt + 4 + 2, &tmp_y3, sizeof(blst_fr));
-  memcpy(ctxt + 4 + 3, &tmp_y0, sizeof(blst_fr));
-
-  anemoi_jive_4_apply_matrix(ctxt + 4);
+  anemoi_jive_4_apply_matrix(state_y);
 }
+
 void anemoi_jive_addchain_alpha_inv(blst_fr *res, blst_fr *x) {
   // Allocating on the heap 32 bytes * 36 (= 1152 bytes) for intermediary
   // variables to compute the addition chain. Less values might be required.
@@ -766,12 +764,12 @@ void anemoi_jive_apply(anemoi_ctxt_t *ctxt) {
   }
 
   else if (ctxt->l == 4) {
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 1; i++) {
       anemoi_jive_smaller_than_4_add_constant(ctxt, i);
       anemoi_jive_4_apply_linear_layer(state);
-      anemoi_jive_generic_apply_flystel(ctxt);
+      /* anemoi_jive_generic_apply_flystel(ctxt); */
     }
-    anemoi_jive_4_apply_linear_layer(state);
+    /* anemoi_jive_4_apply_linear_layer(state); */
   }
 
   else {
