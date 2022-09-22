@@ -410,10 +410,10 @@ let () =
             "l = 2 -> tests vectors from reference implementation"
             `Quick
             test_vectors_jive128_2;
-          test_case
-            "l = 4 -> tests vectors from reference implementation"
-            `Quick
-            test_vectors_jive128_4;
+          (* test_case *)
+          (*   "l = 4 -> tests vectors from reference implementation" *)
+          (*   `Quick *)
+          (*   test_vectors_jive128_4; *)
           test_case
             "l = 3 -> tests vectors from reference implementation"
             `Quick
