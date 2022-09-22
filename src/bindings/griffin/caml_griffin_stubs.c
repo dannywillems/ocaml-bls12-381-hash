@@ -10,41 +10,106 @@
 
 #include "caml_bls12_381_stubs.h"
 
-CAMLprim value caml_bls12_381_griffin_allocate_ctxt_stubs(value vunit) {
-  CAMLparam1(vunit);
-  CAMLlocal1(block);
-  block = caml_alloc_custom(&blst_fr_ops, sizeof(blst_fr) * GRIFFIN_STATE_SIZE, 0, 1);
-  CAMLreturn(block);
+#define Griffin_ctxt_val(v) (*((griffin_ctxt_t **)Data_custom_val(v)))
+
+static void finalize_free_griffin_ctxt(value vctxt) {
+  griffin_ctxt_t *ctxt = Griffin_ctxt_val(vctxt);
+  free(ctxt->state);
+  free(ctxt);
 }
 
-CAMLprim value caml_bls12_381_griffin_init_ctxt_stubs(value vctxt, value va,
-                                                      value vb, value vc) {
-  CAMLparam4(vctxt, va, vb, vc);
-  blst_fr *ctxt = Blst_fr_val(vctxt);
-  blst_fr *a = Blst_fr_val(va);
-  blst_fr *b = Blst_fr_val(vb);
-  blst_fr *c = Blst_fr_val(vc);
-  memcpy(ctxt, a, sizeof(blst_fr));
-  memcpy(ctxt + 1, b, sizeof(blst_fr));
-  memcpy(ctxt + 2, c, sizeof(blst_fr));
+static struct custom_operations griffin_ctxt_ops = {
+    "griffin_ctxt_t",           finalize_free_griffin_ctxt,
+    custom_compare_default,     custom_hash_default,
+    custom_serialize_default,   custom_deserialize_default,
+    custom_compare_ext_default, custom_fixed_length_default};
+
+CAMLprim value caml_bls12_381_griffin_allocate_ctxt_stubs(value vnb_rounds,
+                                                          value vstate_size,
+                                                          value vconstants,
+                                                          value valpha_beta_s) {
+  CAMLparam4(vnb_rounds, vstate_size, vconstants, valpha_beta_s);
+  CAMLlocal1(vblock);
+  int state_size = Int_val(vstate_size);
+  int nb_rounds = Int_val(vnb_rounds);
+
+  // state_size + constants + nb alpha_beta_s
+  int nb_alpha_beta_s = (state_size - 2) * 2;
+  int nb_constants = nb_rounds * state_size;
+
+  int state_full_size = state_size + nb_constants + nb_alpha_beta_s;
+  blst_fr *state = malloc(sizeof(blst_fr) * state_full_size);
+  if (state == NULL) {
+    caml_raise_out_of_memory();
+  }
+  griffin_ctxt_t *ctxt = malloc(sizeof(griffin_ctxt_t));
+  if (ctxt == NULL) {
+    free(state);
+    caml_raise_out_of_memory();
+  }
+  memset(state, 0, state_size * sizeof(blst_fr));
+  ctxt->state = state;
+  ctxt->state_size = state_size;
+  ctxt->nb_rounds = nb_rounds;
+
+  blst_fr *alpha_beta_s = state + state_size;
+  blst_fr *constants = state + state_size + nb_alpha_beta_s;
+
+  for (int i = 0; i < nb_alpha_beta_s; i++) {
+    memcpy(alpha_beta_s + i, Fr_val_k(valpha_beta_s, i), sizeof(blst_fr));
+  }
+
+  for (int i = 0; i < nb_constants; i++) {
+    memcpy(constants + i, Fr_val_k(vconstants, i), sizeof(blst_fr));
+  }
+
+  int out_of_heap_size = sizeof(griffin_ctxt_t *) +
+                         state_full_size * sizeof(blst_fr) +
+                         sizeof(griffin_ctxt_t);
+
+  vblock = caml_alloc_custom_mem(&griffin_ctxt_ops, sizeof(griffin_ctxt_t *),
+                                 out_of_heap_size);
+
+  griffin_ctxt_t **block = (griffin_ctxt_t **)(Data_custom_val(vblock));
+  *block = ctxt;
+  CAMLreturn(vblock);
+}
+
+CAMLprim value caml_bls12_381_griffin_set_state_stubs(value vctxt,
+                                                      value vstate) {
+  CAMLparam2(vctxt, vstate);
+
+  griffin_ctxt_t *ctxt = Griffin_ctxt_val(vctxt);
+  blst_fr *state = ctxt->state;
+
+  for (int i = 0; i < ctxt->state_size; i++) {
+    memcpy(state + i, Fr_val_k(vstate, i), sizeof(blst_fr));
+  }
+
   CAMLreturn(Val_unit);
 }
 
-value caml_bls12_381_griffin_apply_permutation_stubs(value vctxt) {
+CAMLprim value caml_bls12_381_griffin_apply_permutation_stubs(value vctxt) {
   CAMLparam1(vctxt);
-  griffin_apply_permutation(Blst_fr_val(vctxt));
+  griffin_ctxt_t *ctxt = Griffin_ctxt_val(vctxt);
+  griffin_apply_permutation(ctxt);
   CAMLreturn(Val_unit);
 }
 
-CAMLprim value caml_bls12_381_griffin_get_state_stubs(value va, value vb,
-                                                      value vc, value vctxt) {
-  CAMLparam4(va, vb, vc, vctxt);
-  blst_fr *ctxt = Blst_fr_val(vctxt);
-  blst_fr *a = Blst_fr_val(va);
-  blst_fr *b = Blst_fr_val(vb);
-  blst_fr *c = Blst_fr_val(vc);
-  memcpy(a, ctxt, sizeof(blst_fr));
-  memcpy(b, ctxt + 1, sizeof(blst_fr));
-  memcpy(c, ctxt + 2, sizeof(blst_fr));
+CAMLprim value caml_bls12_381_griffin_get_state_stubs(value vbuffer,
+                                                      value vctxt) {
+  CAMLparam2(vbuffer, vctxt);
+  griffin_ctxt_t *ctxt = Griffin_ctxt_val(vctxt);
+  blst_fr *state = griffin_get_state_from_context(ctxt);
+  int state_size = ctxt->state_size;
+  for (int i = 0; i < state_size; i++) {
+    memcpy(Fr_val_k(vbuffer, i), state + i, sizeof(blst_fr));
+  }
   CAMLreturn(Val_unit);
+}
+
+CAMLprim value caml_bls12_381_griffin_get_state_size_stubs(value vctxt) {
+  CAMLparam1(vctxt);
+  griffin_ctxt_t *ctxt = Griffin_ctxt_val(vctxt);
+  CAMLreturn(Val_int(ctxt->state_size));
 }
