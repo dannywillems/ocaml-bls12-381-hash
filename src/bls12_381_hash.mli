@@ -124,14 +124,26 @@ module Anemoi : sig
     ?mds:Bls12_381.Fr.t array array ->
     ?constants:Bls12_381.Fr.t array ->
     int ->
-    Bls12_381.Fr.t array ->
+    int ->
     ctxt
 
   val get_state : ctxt -> Bls12_381.Fr.t array
 
-  val apply : ctxt -> unit
+  val get_state_size : ctxt -> int
+
+  val set_state : ctxt -> Bls12_381.Fr.t array -> unit
+
+  val apply_permutation : ctxt -> unit
 
   val jive128_1_compress : Bls12_381.Fr.t -> Bls12_381.Fr.t -> Bls12_381.Fr.t
+
+  module Parameters : sig
+    val state_size_2 :
+      int * int * Bls12_381.Fr.t array array * Bls12_381.Fr.t array
+
+    val state_size_3 :
+      int * int * Bls12_381.Fr.t array array * Bls12_381.Fr.t array
+  end
 end
 
 (** {{: https://eprint.iacr.org/2022/403.pdf } Griffin } over the scalar field
