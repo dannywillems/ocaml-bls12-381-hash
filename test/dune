@@ -2,7 +2,7 @@
  (names test_poseidon test_poseidon128 test_rescue test_anemoi test_griffin)
  (modules test_poseidon128 test_poseidon poseidon128_ark poseidon128_mds
    poseidon252_ark poseidon252_mds test_rescue rescue_ark rescue_mds
-   test_anemoi test_griffin)
+   test_anemoi test_griffin anemoi_jive_parameters)
  (package bls12-381-hash)
  (modes native)
  (libraries bls12-381-hash bls12-381 alcotest))
