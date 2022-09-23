@@ -2,6 +2,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+int anemoi_get_state_size_from_ctxt(anemoi_ctxt_t *ctxt) {
+  // shift by state size
+  return (2 * ctxt->l);
+}
+
 blst_fr *anemoi_get_state_from_ctxt(anemoi_ctxt_t *ctxt) {
   // shift by state size
   return (ctxt->ctxt);

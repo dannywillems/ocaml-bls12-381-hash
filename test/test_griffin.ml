@@ -1,7 +1,28 @@
-let test_vectors () =
+let test_state_getter_setter () =
+  let nb_rounds, state_size, constants, alpha_beta_s =
+    Bls12_381_hash.Griffin.Parameters.state_size_3
+  in
+  let ctxt =
+    Bls12_381_hash.Griffin.allocate_ctxt
+      nb_rounds
+      state_size
+      constants
+      alpha_beta_s
+  in
+  let state = Array.init state_size (fun _ -> Bls12_381.Fr.random ()) in
+  let () = Bls12_381_hash.Griffin.set_state ctxt state in
+  assert (
+    Array.for_all2 Bls12_381.Fr.eq state (Bls12_381_hash.Griffin.get_state ctxt))
+
+let test_vectors_griffin_3 () =
   (* Generated from https://extgit.iaik.tugraz.at/krypto/zkfriendlyhashzoo *)
   let vectors =
-    [ ( ( "18463500124224312515875567238728244985257614546546778836630989065496961733332",
+    [ ( ("0", "0", "0"),
+        ( "841791784119451836895521356553213353441862647772555419706984344393580307020",
+          "2113910108688023830687972208474679779076805829875515720963977502550499149602",
+          "39803944790582685391308803209116565255311062071666522256011667391677817204123"
+        ) );
+      ( ( "18463500124224312515875567238728244985257614546546778836630989065496961733332",
           "46981865534249059754749826182943352598004016487267289209329045182268251827732",
           "281220935108567092124864882450372048777669128036755944610462739083424420854"
         ),
@@ -26,9 +47,20 @@ let test_vectors () =
       let exp_res1 = Bls12_381.Fr.of_string exp_res1_s in
       let exp_res2 = Bls12_381.Fr.of_string exp_res2_s in
       let exp_res3 = Bls12_381.Fr.of_string exp_res3_s in
-      let ctxt = Bls12_381_hash.Griffin.init x1 x2 x3 in
+      let nb_rounds, state_size, constants, alpha_beta_s =
+        Bls12_381_hash.Griffin.Parameters.state_size_3
+      in
+      let ctxt =
+        Bls12_381_hash.Griffin.allocate_ctxt
+          nb_rounds
+          state_size
+          constants
+          alpha_beta_s
+      in
+      let () = Bls12_381_hash.Griffin.set_state ctxt [| x1; x2; x3 |] in
       let () = Bls12_381_hash.Griffin.apply_permutation ctxt in
-      let res1, res2, res3 = Bls12_381_hash.Griffin.get ctxt in
+      let res = Bls12_381_hash.Griffin.get_state ctxt in
+      let res1, res2, res3 = (res.(0), res.(1), res.(2)) in
       let b =
         Bls12_381.Fr.eq exp_res1 res1
         && Bls12_381.Fr.eq exp_res2 res2
@@ -49,9 +81,88 @@ let test_vectors () =
           x3_s)
     vectors
 
+let test_vectors_griffin_4 () =
+  (* Generated from https://extgit.iaik.tugraz.at/krypto/zkfriendlyhashzoo *)
+  let vectors =
+    [ ( ("0", "0", "0", "0"),
+        ( "42055013899249843001963096382529769773374725832883030314842616909329673256554",
+          "37539438133362431743003153246954584523646613658726962536114018819275530248977",
+          "48674648934505632020893033170300663189772692405048902597301372423269515724906",
+          "26051996228945922008001164667516225310485844262139985745397463874220219812431"
+        ) ) ]
+  in
+  List.iter
+    (fun ( (x1_s, x2_s, x3_s, x4_s),
+           (exp_res1_s, exp_res2_s, exp_res3_s, exp_res4_s) ) ->
+      let x1 = Bls12_381.Fr.of_string x1_s in
+      let x2 = Bls12_381.Fr.of_string x2_s in
+      let x3 = Bls12_381.Fr.of_string x3_s in
+      let x4 = Bls12_381.Fr.of_string x4_s in
+      let exp_res1 = Bls12_381.Fr.of_string exp_res1_s in
+      let exp_res2 = Bls12_381.Fr.of_string exp_res2_s in
+      let exp_res3 = Bls12_381.Fr.of_string exp_res3_s in
+      let exp_res4 = Bls12_381.Fr.of_string exp_res4_s in
+      let nb_rounds, state_size, constants, alpha_beta_s =
+        Bls12_381_hash.Griffin.Parameters.state_size_4
+      in
+      let ctxt =
+        Bls12_381_hash.Griffin.allocate_ctxt
+          nb_rounds
+          state_size
+          constants
+          alpha_beta_s
+      in
+      let () = Bls12_381_hash.Griffin.set_state ctxt [| x1; x2; x3; x4 |] in
+      let () = Bls12_381_hash.Griffin.apply_permutation ctxt in
+      let res = Bls12_381_hash.Griffin.get_state ctxt in
+      let res1, res2, res3, res4 = (res.(0), res.(1), res.(2), res.(3)) in
+      let b =
+        Bls12_381.Fr.eq exp_res1 res1
+        && Bls12_381.Fr.eq exp_res2 res2
+        && Bls12_381.Fr.eq exp_res3 res3
+        && Bls12_381.Fr.eq exp_res4 res4
+      in
+      if not b then
+        Alcotest.failf
+          "Expected result = (%s, %s, %s, %s), computed result = (%s, %s, %s, \
+           %s), input = (%s, %s, %s, %s)"
+          exp_res1_s
+          exp_res2_s
+          exp_res3_s
+          exp_res4_s
+          (Bls12_381.Fr.to_string res1)
+          (Bls12_381.Fr.to_string res2)
+          (Bls12_381.Fr.to_string res3)
+          (Bls12_381.Fr.to_string res4)
+          x1_s
+          x2_s
+          x3_s
+          x4_s)
+    vectors
+
+(*
+    Bls12_381.Fr.
+      [| of_string
+           "42055013899249843001963096382529769773374725832883030314842616909329673256554";
+         of_string
+           "37539438133362431743003153246954584523646613658726962536114018819275530248977";
+         of_string
+           "48674648934505632020893033170300663189772692405048902597301372423269515724906";
+         of_string
+           "26051996228945922008001164667516225310485844262139985745397463874220219812431"
+      |] 
+   *)
 let () =
   let open Alcotest in
   run
     "Griffin"
     [ ( "Test vectors",
-        [test_case "from reference implementation" `Quick test_vectors] ) ]
+        [ test_case
+            "from reference implementation: Griffin 3"
+            `Quick
+            test_vectors_griffin_3;
+          test_case
+            "from reference implementation: Griffin 4"
+            `Quick
+            test_vectors_griffin_4 ] );
+      ("State", [test_case "get and set" `Quick test_state_getter_setter]) ]

@@ -107,9 +107,9 @@ let test_vectors_jive128_2 () =
   List.iter
     (fun ( (x1_s, x2_s, y1_s, y2_s),
            (exp_res_x1_s, exp_res_x2_s, exp_res_y1_s, exp_res_y2_s) ) ->
-      let l = 2 in
-      let mds = Anemoi_jive_parameters.Jive2_128.mds in
-      let constants = Anemoi_jive_parameters.Jive2_128.constants in
+      let nb_rounds, l, mds, constants =
+        Bls12_381_hash.Anemoi.Parameters.state_size_2
+      in
       let x1 = Bls12_381.Fr.of_string x1_s in
       let x2 = Bls12_381.Fr.of_string x2_s in
       let y1 = Bls12_381.Fr.of_string y1_s in
@@ -119,8 +119,11 @@ let test_vectors_jive128_2 () =
       let exp_res_y1 = Bls12_381.Fr.of_string exp_res_y1_s in
       let exp_res_y2 = Bls12_381.Fr.of_string exp_res_y2_s in
       let state = [| x1; x2; y1; y2 |] in
-      let ctxt = Bls12_381_hash.Anemoi.allocate_ctxt ~mds ~constants l state in
-      let () = Bls12_381_hash.Anemoi.apply ctxt in
+      let ctxt =
+        Bls12_381_hash.Anemoi.allocate_ctxt ~mds ~constants l nb_rounds
+      in
+      let () = Bls12_381_hash.Anemoi.set_state ctxt state in
+      let () = Bls12_381_hash.Anemoi.apply_permutation ctxt in
       let output = Bls12_381_hash.Anemoi.get_state ctxt in
       let res_x1, res_x2, res_y1, res_y2 =
         (output.(0), output.(1), output.(2), output.(3))
@@ -201,9 +204,9 @@ let test_vectors_jive128_3 () =
              exp_res_y1_s,
              exp_res_y2_s,
              exp_res_y3_s ) ) ->
-      let l = 3 in
-      let constants = Anemoi_jive_parameters.Jive3_128.constants in
-      let mds = Anemoi_jive_parameters.Jive3_128.mds in
+      let nb_rounds, l, mds, constants =
+        Bls12_381_hash.Anemoi.Parameters.state_size_3
+      in
       let x1 = Bls12_381.Fr.of_string x1_s in
       let x2 = Bls12_381.Fr.of_string x2_s in
       let x3 = Bls12_381.Fr.of_string x3_s in
@@ -217,8 +220,11 @@ let test_vectors_jive128_3 () =
       let exp_res_y2 = Bls12_381.Fr.of_string exp_res_y2_s in
       let exp_res_y3 = Bls12_381.Fr.of_string exp_res_y3_s in
       let state = [| x1; x2; x3; y1; y2; y3 |] in
-      let ctxt = Bls12_381_hash.Anemoi.allocate_ctxt ~mds ~constants l state in
-      let () = Bls12_381_hash.Anemoi.apply ctxt in
+      let ctxt =
+        Bls12_381_hash.Anemoi.allocate_ctxt ~mds ~constants l nb_rounds
+      in
+      let () = Bls12_381_hash.Anemoi.set_state ctxt state in
+      let () = Bls12_381_hash.Anemoi.apply_permutation ctxt in
       let output = Bls12_381_hash.Anemoi.get_state ctxt in
       let res_x1, res_x2, res_x3, res_y1, res_y2, res_y3 =
         (output.(0), output.(1), output.(2), output.(3), output.(4), output.(5))
@@ -286,6 +292,7 @@ let test_vectors_jive128_4 () =
              exp_res_y3_s,
              exp_res_y4_s ) ) ->
       let l = 4 in
+      let nb_rounds = 10 in
       let x1 = Bls12_381.Fr.of_string x1_s in
       let x2 = Bls12_381.Fr.of_string x2_s in
       let x3 = Bls12_381.Fr.of_string x3_s in
@@ -303,8 +310,9 @@ let test_vectors_jive128_4 () =
       let exp_res_y3 = Bls12_381.Fr.of_string exp_res_y3_s in
       let exp_res_y4 = Bls12_381.Fr.of_string exp_res_y4_s in
       let state = [| x1; x2; x3; x4; y1; y2; y3; y4 |] in
-      let ctxt = Bls12_381_hash.Anemoi.allocate_ctxt l state in
-      let () = Bls12_381_hash.Anemoi.apply ctxt in
+      let ctxt = Bls12_381_hash.Anemoi.allocate_ctxt l nb_rounds in
+      let () = Bls12_381_hash.Anemoi.set_state ctxt state in
+      let () = Bls12_381_hash.Anemoi.apply_permutation ctxt in
       let output = Bls12_381_hash.Anemoi.get_state ctxt in
       let res_x1, res_x2, res_x3, res_x4, res_y1, res_y2, res_y3, res_y4 =
         ( output.(0),
@@ -370,22 +378,33 @@ let test_state_functions () =
   let mds =
     Array.init l (fun _ -> Array.init l (fun _ -> Bls12_381.Fr.random ()))
   in
-  let nb_rounds = if l = 1 then 19 else if l = 2 then 12 else 10 in
+  let nb_rounds = 2 + Random.int 100 in
   let constants =
     Array.init (2 * l * nb_rounds) (fun _ -> Bls12_381.Fr.random ())
   in
   let state_size = 2 * l in
   let state = Array.init state_size (fun _ -> Bls12_381.Fr.random ()) in
-  let ctxt = Bls12_381_hash.Anemoi.allocate_ctxt ~mds ~constants l state in
+  let ctxt = Bls12_381_hash.Anemoi.allocate_ctxt ~mds ~constants l nb_rounds in
+  let () = Bls12_381_hash.Anemoi.set_state ctxt state in
   let output = Bls12_381_hash.Anemoi.get_state ctxt in
-  assert (Array.for_all2 Bls12_381.Fr.eq state output)
+  if not (Array.for_all2 Bls12_381.Fr.eq state output) then
+    Alcotest.failf
+      "Exp: [%s], computed: [%s]"
+      (String.concat
+         "; "
+         (List.map Bls12_381.Fr.to_string (Array.to_list state)))
+      (String.concat
+         "; "
+         (List.map Bls12_381.Fr.to_string (Array.to_list output)))
 
 let test_anemoi_generic_with_l_one_is_anemoi_jive128_1_compress () =
   let l = 1 in
   let state_size = 2 * l in
+  let nb_rounds = 19 in
   let state = Array.init state_size (fun _ -> Bls12_381.Fr.random ()) in
-  let ctxt = Bls12_381_hash.Anemoi.allocate_ctxt l state in
-  let () = Bls12_381_hash.Anemoi.apply ctxt in
+  let ctxt = Bls12_381_hash.Anemoi.allocate_ctxt l nb_rounds in
+  let () = Bls12_381_hash.Anemoi.set_state ctxt state in
+  let () = Bls12_381_hash.Anemoi.apply_permutation ctxt in
   let output = Bls12_381_hash.Anemoi.get_state ctxt in
   assert (
     Bls12_381.Fr.eq
