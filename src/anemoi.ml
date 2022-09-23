@@ -66,6 +66,20 @@ let jive128_1_compress x y =
 module Parameters = struct
   let g = Bls12_381.Fr.of_string "7"
 
+  let beta = Bls12_381.Fr.of_string "7"
+
+  let delta =
+    Bls12_381.Fr.of_string
+      "14981678621464625851270783002338847382197300714436467949315331057125308909861"
+
+  let alpha = Bls12_381.Fr.of_string "5"
+
+  let alpha_inv =
+    Bls12_381.Fr.of_string
+      "20974350070050476191779096203274386335076221000211055129041463479975432473805"
+
+  let gamma = Bls12_381.Fr.zero
+
   let state_size_2 =
     ( 12,
       2,

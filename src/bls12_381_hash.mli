@@ -138,6 +138,18 @@ module Anemoi : sig
   val jive128_1_compress : Bls12_381.Fr.t -> Bls12_381.Fr.t -> Bls12_381.Fr.t
 
   module Parameters : sig
+    val alpha : Bls12_381.Fr.t
+
+    val alpha_inv : Bls12_381.Fr.t
+
+    val delta : Bls12_381.Fr.t
+
+    val g : Bls12_381.Fr.t
+
+    val beta : Bls12_381.Fr.t
+
+    val gamma : Bls12_381.Fr.t
+
     val state_size_2 :
       int * int * Bls12_381.Fr.t array array * Bls12_381.Fr.t array
 
