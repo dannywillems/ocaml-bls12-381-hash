@@ -114,12 +114,15 @@ module Rescue : sig
   val get : ctxt -> Bls12_381.Fr.t * Bls12_381.Fr.t * Bls12_381.Fr.t
 end
 
-(** Implementation of an instanciation of {{: https://eprint.iacr.org/2022/840}
-    AnemoiJive2 } over the scalar field of BLS12-381 for a security of 128 bits.
+(** Implementation of {{: https://eprint.iacr.org/2022/840}
+    AnemoiJive } over the scalar field of BLS12-381.
 *)
 module Anemoi : sig
+  (** A context contains the state and the instance parameters *)
   type ctxt
 
+  (** [allocate_ctxt ?mds ?constants l nb_rounds]. Allocate a context for a
+      specific instance of Anemoi *)
   val allocate_ctxt :
     ?mds:Bls12_381.Fr.t array array ->
     ?constants:Bls12_381.Fr.t array ->
@@ -127,32 +130,64 @@ module Anemoi : sig
     int ->
     ctxt
 
+  (** Return the current state of the context *)
   val get_state : ctxt -> Bls12_381.Fr.t array
 
+  (** Return the state size of the context *)
   val get_state_size : ctxt -> int
 
+  (** [set_state ctxt state]. Set the context state to the given value. The
+      value [state] must be of the same size than the expecting state *)
   val set_state : ctxt -> Bls12_381.Fr.t array -> unit
 
+  (** Apply a permutation on the current state of the context *)
   val apply_permutation : ctxt -> unit
 
+  (** [jive128_1_compress x y] calls AnemoiJive for [l = 1] on [x] and [y] to
+      compute [(u, v)] and returns [x + y + u + v] *)
   val jive128_1_compress : Bls12_381.Fr.t -> Bls12_381.Fr.t -> Bls12_381.Fr.t
 
+  (** Set of parameters for BLS12-381, and parameters for specific
+     instantiations given in the reference paper *)
   module Parameters : sig
+    (** Exponent for the substitution box. For BLS12-381, it is [5] *)
     val alpha : Bls12_381.Fr.t
 
+    (** Inverse of the exponent for the substitution box. For BLS12-381, it is
+        [20974350070050476191779096203274386335076221000211055129041463479975432473805] *)
     val alpha_inv : Bls12_381.Fr.t
 
+    (** For BLS12-381, it is
+        [14981678621464625851270783002338847382197300714436467949315331057125308909861]
+    *)
     val delta : Bls12_381.Fr.t
 
+    (** First generator of the scalar field of BLS12-381, i.e. [7] *)
     val g : Bls12_381.Fr.t
 
+    (** Same than {!g} *)
     val beta : Bls12_381.Fr.t
 
+    (** Set to [0] for BLS12-381 *)
     val gamma : Bls12_381.Fr.t
 
+    (** Parameters for AnemoiJive with [l = 2] and 128 bits of security
+        The parameters are:
+        - number of rounds
+        - l
+        - MDS matrix
+        - round constants
+    *)
     val state_size_2 :
       int * int * Bls12_381.Fr.t array array * Bls12_381.Fr.t array
 
+    (** Parameters for AnemoiJive with [l = 3] and 128 bits of security
+        The parameters are:
+        - number of rounds
+        - l
+        - MDS matrix
+        - round constants
+    *)
     val state_size_3 :
       int * int * Bls12_381.Fr.t array array * Bls12_381.Fr.t array
   end
