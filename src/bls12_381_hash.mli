@@ -212,16 +212,33 @@ module Griffin : sig
       is modified. *)
   val apply_permutation : ctxt -> unit
 
+  (** [set_state ctxt state]. Set the context state to the given value. The
+      value [state] must be of the same size than the expecting state *)
   val set_state : ctxt -> Bls12_381.Fr.t array -> unit
 
+  (** Return the current state of the context *)
   val get_state : ctxt -> Bls12_381.Fr.t array
 
+  (** Return the state size of the context *)
   val get_state_size : ctxt -> int
 
   module Parameters : sig
-    (* [nb_rounds, state_size, constants, alpha_beta_s] *)
+    (** Parameters for Griffin with a state size of [3] for a security of
+        128bits. The value is:
+        - number of rounds
+        - state size
+        - round constants
+        - alpha/beta's
+    *)
     val state_size_3 : int * int * Bls12_381.Fr.t array * Bls12_381.Fr.t array
 
+    (** Parameters for Griffin with a state size of [4] for a security of 128
+        bits. The value is:
+        - number of rounds
+        - state size
+        - round constants
+        - alpha/beta's
+    *)
     val state_size_4 : int * int * Bls12_381.Fr.t array * Bls12_381.Fr.t array
   end
 end
