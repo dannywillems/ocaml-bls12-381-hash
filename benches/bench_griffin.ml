@@ -1,9 +1,11 @@
 open Core_bench
 
-let t1 =
-  let name = "Benchmark one permutation of Griffin" in
-  let nb_rounds, state_size, constants, alpha_beta_s =
-    Bls12_381_hash.Griffin.Parameters.state_size_3
+let t params =
+  let nb_rounds, state_size, constants, alpha_beta_s = params in
+  let name =
+    Printf.sprintf
+      "Benchmark one permutation of Griffin (state size = %d)"
+      state_size
   in
   let ctxt =
     Bls12_381_hash.Griffin.allocate_ctxt
@@ -21,6 +23,9 @@ let t1 =
       let () = Bls12_381_hash.Griffin.apply_permutation ctxt in
       ())
 
-let command = Bench.make_command [t1]
+let command =
+  Bench.make_command
+    [ t Bls12_381_hash.Griffin.Parameters.state_size_3;
+      t Bls12_381_hash.Griffin.Parameters.state_size_4 ]
 
 let () = Core.Command.run command

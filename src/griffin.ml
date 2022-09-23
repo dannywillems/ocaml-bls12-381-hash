@@ -21,6 +21,8 @@ end
 type ctxt = Stubs.ctxt
 
 let allocate_ctxt nb_rounds state_size constants alpha_beta_s =
+  if state_size <> 3 && state_size <> 4 then
+    failwith "Only state of 3 and 4 are implemented for the moment" ;
   let ctxt = Stubs.allocate_ctxt nb_rounds state_size constants alpha_beta_s in
   ctxt
 
