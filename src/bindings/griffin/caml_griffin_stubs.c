@@ -24,7 +24,7 @@ static struct custom_operations griffin_ctxt_ops = {
     custom_serialize_default,   custom_deserialize_default,
     custom_compare_ext_default, custom_fixed_length_default};
 
-CAMLprim value caml_bls12_381_griffin_allocate_ctxt_stubs(value vnb_rounds,
+CAMLprim value caml_bls12_381_hash_griffin_allocate_ctxt_stubs(value vnb_rounds,
                                                           value vstate_size,
                                                           value vconstants,
                                                           value valpha_beta_s) {
@@ -75,7 +75,7 @@ CAMLprim value caml_bls12_381_griffin_allocate_ctxt_stubs(value vnb_rounds,
   CAMLreturn(vblock);
 }
 
-CAMLprim value caml_bls12_381_griffin_set_state_stubs(value vctxt,
+CAMLprim value caml_bls12_381_hash_griffin_set_state_stubs(value vctxt,
                                                       value vstate) {
   CAMLparam2(vctxt, vstate);
 
@@ -89,14 +89,14 @@ CAMLprim value caml_bls12_381_griffin_set_state_stubs(value vctxt,
   CAMLreturn(Val_unit);
 }
 
-CAMLprim value caml_bls12_381_griffin_apply_permutation_stubs(value vctxt) {
+CAMLprim value caml_bls12_381_hash_griffin_apply_permutation_stubs(value vctxt) {
   CAMLparam1(vctxt);
   griffin_ctxt_t *ctxt = Griffin_ctxt_val(vctxt);
   griffin_apply_permutation(ctxt);
   CAMLreturn(Val_unit);
 }
 
-CAMLprim value caml_bls12_381_griffin_get_state_stubs(value vbuffer,
+CAMLprim value caml_bls12_381_hash_griffin_get_state_stubs(value vbuffer,
                                                       value vctxt) {
   CAMLparam2(vbuffer, vctxt);
   griffin_ctxt_t *ctxt = Griffin_ctxt_val(vctxt);
@@ -108,7 +108,7 @@ CAMLprim value caml_bls12_381_griffin_get_state_stubs(value vbuffer,
   CAMLreturn(Val_unit);
 }
 
-CAMLprim value caml_bls12_381_griffin_get_state_size_stubs(value vctxt) {
+CAMLprim value caml_bls12_381_hash_griffin_get_state_size_stubs(value vctxt) {
   CAMLparam1(vctxt);
   griffin_ctxt_t *ctxt = Griffin_ctxt_val(vctxt);
   CAMLreturn(Val_int(ctxt->state_size));

@@ -45,10 +45,10 @@ static struct custom_operations anemoi_ctxt_ops = {"anemoi_ctxt_t",
                                                    custom_compare_ext_default,
                                                    custom_fixed_length_default};
 
-value caml_bls12_381_hash_anemoi_jive_allocate_ctxt_stubs(value vmds,
-                                                          value vconstants,
-                                                          value vl,
-                                                          value vnb_rounds) {
+CAMLprim value caml_bls12_381_hash_anemoi_jive_allocate_ctxt_stubs(value vmds,
+                                                                   value vconstants,
+                                                                   value vl,
+                                                                   value vnb_rounds) {
   CAMLparam4(vmds, vconstants, vl, vnb_rounds);
   CAMLlocal1(vblock);
 
@@ -116,8 +116,8 @@ CAMLprim value caml_bls12_381_hash_anemoi_jive_get_state_stubs(value vbuffer,
                                                                value vctxt) {
   CAMLparam2(vbuffer, vctxt);
   anemoi_ctxt_t *ctxt = Anemoi_ctxt_val(vctxt);
-  blst_fr *state = anemoi_get_state_from_ctxt(ctxt);
-  int state_size = anemoi_get_state_size_from_ctxt(ctxt);
+  blst_fr *state = anemoi_get_state_from_context(ctxt);
+  int state_size = anemoi_get_state_size_from_context(ctxt);
 
   for (int i = 0; i < state_size; i++) {
     memcpy(Fr_val_k(vbuffer, i), state + i, sizeof(blst_fr));
@@ -130,8 +130,8 @@ CAMLprim value caml_bls12_381_hash_anemoi_jive_set_state_stubs(value vctxt,
   CAMLparam2(vctxt, vstate);
 
   anemoi_ctxt_t *ctxt = Anemoi_ctxt_val(vctxt);
-  blst_fr *state = anemoi_get_state_from_ctxt(ctxt);
-  int state_size = anemoi_get_state_size_from_ctxt(ctxt);
+  blst_fr *state = anemoi_get_state_from_context(ctxt);
+  int state_size = anemoi_get_state_size_from_context(ctxt);
 
   for (int i = 0; i < state_size; i++) {
     memcpy(state + i, Fr_val_k(vstate, i), sizeof(blst_fr));
@@ -143,7 +143,7 @@ CAMLprim value
 caml_bls12_381_hash_anemoi_jive_get_state_size_stubs(value vctxt) {
   CAMLparam1(vctxt);
   anemoi_ctxt_t *ctxt = Anemoi_ctxt_val(vctxt);
-  CAMLreturn(Val_int(anemoi_get_state_size_from_ctxt(ctxt)));
+  CAMLreturn(Val_int(anemoi_get_state_size_from_context(ctxt)));
 }
 
 CAMLprim value caml_bls12_381_hash_anemoi_jive_apply_stubs(value vctxt) {

@@ -3,19 +3,19 @@ module Stubs = struct
 
   external allocate_ctxt :
     int -> int -> Bls12_381.Fr.t array -> Bls12_381.Fr.t array -> ctxt
-    = "caml_bls12_381_griffin_allocate_ctxt_stubs"
+    = "caml_bls12_381_hash_griffin_allocate_ctxt_stubs"
 
   external apply_perm : ctxt -> unit
-    = "caml_bls12_381_griffin_apply_permutation_stubs"
+    = "caml_bls12_381_hash_griffin_apply_permutation_stubs"
 
   external get_state : Bls12_381.Fr.t array -> ctxt -> unit
-    = "caml_bls12_381_griffin_get_state_stubs"
+    = "caml_bls12_381_hash_griffin_get_state_stubs"
 
   external set_state : ctxt -> Bls12_381.Fr.t array -> unit
-    = "caml_bls12_381_griffin_set_state_stubs"
+    = "caml_bls12_381_hash_griffin_set_state_stubs"
 
   external get_state_size : ctxt -> int
-    = "caml_bls12_381_griffin_get_state_size_stubs"
+    = "caml_bls12_381_hash_griffin_get_state_size_stubs"
 end
 
 type ctxt = Stubs.ctxt

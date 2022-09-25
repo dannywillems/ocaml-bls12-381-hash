@@ -866,12 +866,12 @@ void anemoi_jive128_1_compress(blst_fr *res, blst_fr *x, blst_fr *y);
 
 void anemoi_jive_apply(anemoi_ctxt_t *ctxt);
 
-blst_fr *anemoi_get_state_from_ctxt(anemoi_ctxt_t *ctxt);
+blst_fr *anemoi_get_state_from_context(anemoi_ctxt_t *ctxt);
 
-int anemoi_get_state_size_from_ctxt(anemoi_ctxt_t *ctxt);
+int anemoi_get_state_size_from_context(anemoi_ctxt_t *ctxt);
 
-blst_fr *anemoi_get_mds_from_ctxt(anemoi_ctxt_t *ctxt);
+blst_fr *anemoi_get_mds_from_context(anemoi_ctxt_t *ctxt);
 
-blst_fr *anemoi_get_constants_from_ctxt(anemoi_ctxt_t *ctxt);
+blst_fr *anemoi_get_round_constants_from_context(anemoi_ctxt_t *ctxt);
 
 #endif

@@ -2,22 +2,22 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int anemoi_get_state_size_from_ctxt(anemoi_ctxt_t *ctxt) {
+int anemoi_get_state_size_from_context(anemoi_ctxt_t *ctxt) {
   // shift by state size
   return (2 * ctxt->l);
 }
 
-blst_fr *anemoi_get_state_from_ctxt(anemoi_ctxt_t *ctxt) {
+blst_fr *anemoi_get_state_from_context(anemoi_ctxt_t *ctxt) {
   // shift by state size
   return (ctxt->ctxt);
 }
 
-blst_fr *anemoi_get_mds_from_ctxt(anemoi_ctxt_t *ctxt) {
+blst_fr *anemoi_get_mds_from_context(anemoi_ctxt_t *ctxt) {
   // shift by state size
   return (ctxt->ctxt + 2 * ctxt->l);
 }
 
-blst_fr *anemoi_get_constants_from_ctxt(anemoi_ctxt_t *ctxt) {
+blst_fr *anemoi_get_round_constants_from_context(anemoi_ctxt_t *ctxt) {
   // shift by state size and MDS
   return (ctxt->ctxt + 2 * ctxt->l + ctxt->l * ctxt->l);
 }
@@ -658,7 +658,7 @@ void anemoi_jive128_1_compress(blst_fr *res, blst_fr *x, blst_fr *y) {
 }
 
 void anemoi_jive_generic_apply_flystel(anemoi_ctxt_t *ctxt) {
-  blst_fr *state = anemoi_get_state_from_ctxt(ctxt);
+  blst_fr *state = anemoi_get_state_from_context(ctxt);
   for (int i = 0; i < ctxt->l; i++) {
     anemoi_jive_apply_s_box(state + i, state + ctxt->l + i);
   }
@@ -667,7 +667,7 @@ void anemoi_jive_generic_apply_flystel(anemoi_ctxt_t *ctxt) {
 void anemoi_jive_smaller_than_4_add_constant(anemoi_ctxt_t *ctxt, int i_round) {
   // NB: 4 is the jump to perform as the constants are for up to l = 4. If we
   // generate for more instances, this value must be changed.
-  blst_fr *state = anemoi_get_state_from_ctxt(ctxt);
+  blst_fr *state = anemoi_get_state_from_context(ctxt);
 
   for (int i = 0; i < ctxt->l; i++) {
     blst_fr_add(state + i, state + i,
@@ -680,10 +680,10 @@ void anemoi_jive_smaller_than_4_add_constant(anemoi_ctxt_t *ctxt, int i_round) {
 int anemoi_jive_generic_add_constant(anemoi_ctxt_t *ctxt, int i_rc) {
   // NB: 4 is the jump to perform as the constants are for up to l = 4. If we
   // generate for more instances, this value must be changed.
-  blst_fr *state = anemoi_get_state_from_ctxt(ctxt);
+  blst_fr *state = anemoi_get_state_from_context(ctxt);
   blst_fr *state_x = state;
   blst_fr *state_y = state + ctxt->l;
-  blst_fr *constants = anemoi_get_constants_from_ctxt(ctxt);
+  blst_fr *constants = anemoi_get_round_constants_from_context(ctxt);
   blst_fr *constants_x = constants;
   blst_fr *constants_y = constants + ctxt->nb_rounds * ctxt->l;
   for (int i = 0; i < ctxt->l; i++) {
@@ -694,10 +694,10 @@ int anemoi_jive_generic_add_constant(anemoi_ctxt_t *ctxt, int i_rc) {
 }
 
 void anemoi_jive_generic_apply_linear_layer(anemoi_ctxt_t *ctxt) {
-  blst_fr *state = anemoi_get_state_from_ctxt(ctxt);
+  blst_fr *state = anemoi_get_state_from_context(ctxt);
   blst_fr *state_x = state;
   blst_fr *state_y = state + ctxt->l;
-  blst_fr *mds = anemoi_get_mds_from_ctxt(ctxt);
+  blst_fr *mds = anemoi_get_mds_from_context(ctxt);
 
   blst_fr buffer[ctxt->l];
 
@@ -744,7 +744,7 @@ void anemoi_jive_generic_apply_linear_layer(anemoi_ctxt_t *ctxt) {
 void anemoi_jive_apply(anemoi_ctxt_t *ctxt) {
   int i_round_constants = 0;
 
-  blst_fr *state = anemoi_get_state_from_ctxt(ctxt);
+  blst_fr *state = anemoi_get_state_from_context(ctxt);
 
   if (ctxt->l == 1) {
     anemoi_jive_1_apply(state);
