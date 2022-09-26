@@ -12,11 +12,12 @@
 
 #define Rescue_ctxt_val(v) (*((rescue_ctxt_t **)Data_custom_val(v)))
 
-#define Fr_val_i(v, i) Blst_fr_val(Field(v, i))
-
-#define Fr_val_ij(v, i, j) Blst_fr_val(Field(Field(v, i), j))
-
-static void finalize_free_rescue_ctxt(value v) { free(Rescue_ctxt_val(v)); }
+static void finalize_free_rescue_ctxt(value vctxt) {
+  rescue_ctxt_t *ctxt = Rescue_ctxt_val(vctxt);
+  blst_fr *state = rescue_get_state_from_context(ctxt);
+  free(state);
+  free(ctxt);
+}
 
 static struct custom_operations rescue_ctxt_ops = {"rescue_ctxt_t",
                                                    finalize_free_rescue_ctxt,
@@ -27,68 +28,97 @@ static struct custom_operations rescue_ctxt_ops = {"rescue_ctxt_t",
                                                    custom_compare_ext_default,
                                                    custom_fixed_length_default};
 
-CAMLprim value caml_bls12_381_hash_rescue_allocate_ctxt_stubs(value unit) {
-  CAMLparam1(unit);
-  CAMLlocal1(block);
-  block = caml_alloc_custom(&rescue_ctxt_ops, sizeof(rescue_ctxt_t *), 0, 1);
-  void *p = calloc(1, sizeof(rescue_ctxt_t));
-  if (p == NULL)
+CAMLprim value caml_bls12_381_hash_rescue_allocate_ctxt_stubs(
+    value vmds, value vconstants, value vnb_rounds, value vstate_size) {
+  CAMLparam4(vmds, vconstants, vnb_rounds, vstate_size);
+  CAMLlocal1(vblock);
+
+  int state_size = Int_val(vstate_size);
+  int nb_rounds = Int_val(vnb_rounds);
+  int mds_size = state_size * state_size;
+  int nb_constants = state_size * nb_rounds * 2;
+
+  // Initialize state. It contains the constants and the MDS
+  blst_fr *ctxt_internal =
+      malloc(sizeof(blst_fr) * (state_size + mds_size + nb_constants));
+
+  if (ctxt_internal == NULL) {
     caml_raise_out_of_memory();
-  rescue_ctxt_t **d = (rescue_ctxt_t **)Data_custom_val(block);
-  *d = p;
-  CAMLreturn(block);
-}
+  }
 
-CAMLprim value caml_bls12_381_hash_rescue_constants_init_stubs(
-    value vark, value vmds, value vark_len, value vmds_nb_rows,
-    value vmds_nb_cols) {
+  blst_fr *state = ctxt_internal;
+  memset(state, 0, sizeof(blst_fr) * state_size);
 
-  CAMLparam5(vark, vmds, vark_len, vmds_nb_rows, vmds_nb_cols);
-  int ark_len = Int_val(vark_len);
-  int mds_nb_rows = Int_val(vmds_nb_rows);
-  int mds_nb_cols = Int_val(vmds_nb_cols);
+  blst_fr *mds = ctxt_internal + state_size;
+  blst_fr *constants = ctxt_internal + state_size + mds_size;
 
-  blst_fr *ark = (blst_fr *)calloc(ark_len, sizeof(blst_fr));
-  blst_fr **mds = (blst_fr **)calloc(mds_nb_rows, sizeof(blst_fr *));
-  for (int i = 0; i < mds_nb_rows; i++) {
-    mds[i] = (blst_fr *)calloc(mds_nb_cols, sizeof(blst_fr));
-    for (int j = 0; j < mds_nb_cols; j++) {
-      memcpy(&mds[i][j], Fr_val_ij(vmds, i, j), sizeof(blst_fr));
+  // Copying MDS
+  for (int i = 0; i < state_size; i++) {
+    for (int j = 0; j < state_size; j++) {
+      memcpy(mds + i * state_size + j, Fr_val_ij(vmds, i, j), sizeof(blst_fr));
     }
   }
 
-  for (int i = 0; i < ark_len; i++) {
-    memcpy(ark + i, Fr_val_i(vark, i), sizeof(blst_fr));
+  // Copying ark
+  for (int i = 0; i < nb_constants; i++) {
+    memcpy(constants + i, Fr_val_k(vconstants, i), sizeof(blst_fr));
   }
 
-  int res = rescue_constants_init(ark, mds, ark_len, mds_nb_rows, mds_nb_cols);
-
-  free(ark);
-  for (int i = 0; i < mds_nb_rows; i++) {
-    free(mds[i]);
+  rescue_ctxt_t *ctxt = malloc(sizeof(rescue_ctxt_t));
+  if (ctxt == NULL) {
+    free(ctxt_internal);
+    caml_raise_out_of_memory();
   }
-  free(mds);
-  CAMLreturn(Val_int(res));
+  ctxt->state = ctxt_internal;
+  ctxt->state_size = state_size;
+  ctxt->nb_rounds = nb_rounds;
+
+  size_t out_of_heap_memory_size =
+      sizeof(blst_fr) * (state_size + mds_size + nb_constants) +
+      sizeof(rescue_ctxt_t);
+  vblock = caml_alloc_custom_mem(&rescue_ctxt_ops, sizeof(rescue_ctxt_t *),
+                                 out_of_heap_memory_size);
+
+  rescue_ctxt_t **block = (rescue_ctxt_t **)Data_custom_val(vblock);
+  *block = ctxt;
+
+  CAMLreturn(vblock);
 }
 
-CAMLprim value caml_bls12_381_hash_rescue_init_stubs(value ctxt, value a,
-                                                     value b, value c) {
-  CAMLparam4(ctxt, a, b, c);
-  rescue_init(Rescue_ctxt_val(ctxt), Blst_fr_val(a), Blst_fr_val(b),
-              Blst_fr_val(c));
+CAMLprim value caml_bls12_381_hash_rescue_apply_permutation_stubs(value vctxt) {
+  CAMLparam1(vctxt);
+  marvellous_apply_permutation(Rescue_ctxt_val(vctxt));
   CAMLreturn(Val_unit);
 }
 
-CAMLprim value caml_bls12_381_hash_rescue_apply_perm_stubs(value ctxt) {
-  CAMLparam1(ctxt);
-  marvellous_apply_perm(Rescue_ctxt_val(ctxt));
+CAMLprim value caml_bls12_381_hash_rescue_get_state_stubs(value vbuffer,
+                                                          value vctxt) {
+  CAMLparam2(vbuffer, vctxt);
+  rescue_ctxt_t *ctxt = Rescue_ctxt_val(vctxt);
+  blst_fr *state = rescue_get_state_from_context(ctxt);
+  int state_size = ctxt->state_size;
+  for (int i = 0; i < state_size; i++) {
+    memcpy(Fr_val_k(vbuffer, i), state + i, sizeof(blst_fr));
+  }
   CAMLreturn(Val_unit);
 }
 
-CAMLprim value caml_bls12_381_hash_rescue_get_state_stubs(value a, value b,
-                                                          value c, value ctxt) {
-  CAMLparam4(a, b, c, ctxt);
-  rescue_get_state(Blst_fr_val(a), Blst_fr_val(b), Blst_fr_val(c),
-                   Rescue_ctxt_val(ctxt));
+CAMLprim value caml_bls12_381_hash_rescue_set_state_stubs(value vctxt,
+                                                          value vstate) {
+  CAMLparam2(vctxt, vstate);
+
+  rescue_ctxt_t *ctxt = Rescue_ctxt_val(vctxt);
+  blst_fr *state = rescue_get_state_from_context(ctxt);
+
+  for (int i = 0; i < ctxt->state_size; i++) {
+    memcpy(state + i, Fr_val_k(vstate, i), sizeof(blst_fr));
+  }
+
   CAMLreturn(Val_unit);
+}
+
+CAMLprim value caml_bls12_381_hash_rescue_get_state_size_stubs(value vctxt) {
+  CAMLparam1(vctxt);
+  int state_size = rescue_get_state_size_from_context(Rescue_ctxt_val(vctxt));
+  CAMLreturn(Val_int(state_size));
 }

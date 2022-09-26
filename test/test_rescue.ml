@@ -1,3 +1,16 @@
+let test_state_getter_setter () =
+  let nb_rounds, state_size, mds, constants =
+    Bls12_381_hash.Rescue.Parameters.state_size_3
+  in
+  let ctxt =
+    Bls12_381_hash.Rescue.allocate_ctxt mds constants nb_rounds state_size
+  in
+
+  let state = Array.init state_size (fun _ -> Bls12_381.Fr.random ()) in
+  let () = Bls12_381_hash.Rescue.set_state ctxt state in
+  assert (
+    Array.for_all2 Bls12_381.Fr.eq state (Bls12_381_hash.Rescue.get_state ctxt))
+
 let test_consistent_with_mec () =
   let test_vectors =
     [ ( [| "0";
@@ -45,11 +58,19 @@ let test_consistent_with_mec () =
     (fun (inputs, expected_output) ->
       let inputs = Array.map Bls12_381.Fr.of_string inputs in
       let expected_output = Array.map Bls12_381.Fr.of_string expected_output in
-      Bls12_381_hash.Rescue.constants_init Rescue_ark.v Rescue_mds.v ;
-      let ctxt = Bls12_381_hash.Rescue.init inputs.(0) inputs.(1) inputs.(2) in
+      let nb_rounds, state_size, mds, round_constants =
+        Bls12_381_hash.Rescue.Parameters.state_size_3
+      in
+      let ctxt =
+        Bls12_381_hash.Rescue.allocate_ctxt
+          mds
+          round_constants
+          nb_rounds
+          state_size
+      in
+      let () = Bls12_381_hash.Rescue.set_state ctxt inputs in
       let () = Bls12_381_hash.Rescue.apply_permutation ctxt in
-      let a, b, c = Bls12_381_hash.Rescue.get ctxt in
-      let output = [| a; b; c |] in
+      let output = Bls12_381_hash.Rescue.get_state ctxt in
       Array.iter2
         (fun a b ->
           if not (Bls12_381.Fr.eq a b) then
@@ -66,4 +87,5 @@ let () =
   run
     "Rescue"
     [ ( "Consistency with MEC",
-        [test_case "vectors" `Quick test_consistent_with_mec] ) ]
+        [test_case "vectors" `Quick test_consistent_with_mec] );
+      ("State", [test_case "get and set" `Quick test_state_getter_setter]) ]

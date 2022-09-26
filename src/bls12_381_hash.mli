@@ -92,26 +92,39 @@ module Rescue : sig
   (** Context of the permutation *)
   type ctxt
 
-  (** [constants_init ark mds] initializes the constants for Poseidon.
+  (** [allocate_ctxt mds round_constants nb_rounds state_size]. Allocate a
+      context for a specific instance of Rescue *)
+  val allocate_ctxt :
+    Bls12_381.Fr.t array array -> Bls12_381.Fr.t array -> int -> int -> ctxt
 
-      {b Warnings: }
-      - The function does not verify the parameters are secured
-      - This function must be called before calling {!init},
-           {!apply_permutation} and {!get} *)
-  val constants_init :
-    Bls12_381.Fr.t array -> Bls12_381.Fr.t array array -> unit
+  (** Return the current state of the context *)
+  val get_state : ctxt -> Bls12_381.Fr.t array
 
-  (** [init a b c] returns a new context with an initialised state with the
-      value [[a, b, c]].
-  *)
-  val init : Bls12_381.Fr.t -> Bls12_381.Fr.t -> Bls12_381.Fr.t -> ctxt
+  (** Return the state size of the context *)
+  val get_state_size : ctxt -> int
 
-  (** [apply_permutation ctxt] applies a permutation on the state. The context
-      is modified. *)
+  (** [set_state ctxt state]. Set the context state to the given value. The
+      value [state] must be of the same size than the expecting state *)
+  val set_state : ctxt -> Bls12_381.Fr.t array -> unit
+
+  (** Apply a permutation on the current state of the context *)
   val apply_permutation : ctxt -> unit
 
-  (** [get ctxt] returns the state of the permutation *)
-  val get : ctxt -> Bls12_381.Fr.t * Bls12_381.Fr.t * Bls12_381.Fr.t
+  (** Set of parameters for BLS12-381, and parameters for specific
+      instantiations given in the reference paper *)
+  module Parameters : sig
+    (** Parameters for Rescue with [state_size = 3] and 128 bits of security
+        The parameters are:
+        - number of rounds
+        - state size
+        - MDS matrix
+        - round constants
+
+        FIXME: The MDS and the round constants are not standard
+    *)
+    val state_size_3 :
+      int * int * Bls12_381.Fr.t array array * Bls12_381.Fr.t array
+  end
 end
 
 (** Implementation of {{: https://eprint.iacr.org/2022/840}
