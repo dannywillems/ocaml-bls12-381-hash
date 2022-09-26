@@ -171,6 +171,16 @@ module Anemoi : sig
     (** Set to [0] for BLS12-381 *)
     val gamma : Bls12_381.Fr.t
 
+    (** Parameters for AnemoiJive with [l = 1] and 128 bits of security
+        The parameters are:
+        - number of rounds
+        - l
+        - MDS matrix
+        - round constants
+    *)
+    val state_size_1 :
+      int * int * Bls12_381.Fr.t array array * Bls12_381.Fr.t array
+
     (** Parameters for AnemoiJive with [l = 2] and 128 bits of security
         The parameters are:
         - number of rounds
