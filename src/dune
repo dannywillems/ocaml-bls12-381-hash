@@ -1,7 +1,3 @@
-(copy_files bindings/poseidon128/caml_poseidon128_stubs.c)
-
-(copy_files poseidon128/{poseidon128.h,poseidon128.c})
-
 (copy_files bindings/anemoi/caml_anemoi_stubs.c)
 
 (copy_files anemoi/{anemoi.h,anemoi.c})
@@ -27,6 +23,5 @@
  (library_flags :standard -linkall -ccopt -lpthread)
  (foreign_stubs
   (language c)
-  (names caml_poseidon128_stubs poseidon128 caml_anemoi_stubs anemoi
-    caml_poseidon_stubs poseidon caml_rescue_stubs rescue caml_griffin_stubs
-    griffin)))
+  (names caml_anemoi_stubs anemoi caml_poseidon_stubs poseidon
+    caml_rescue_stubs rescue caml_griffin_stubs griffin)))

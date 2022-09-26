@@ -24,120 +24,144 @@ int poseidon_compute_number_of_constants(int batch_size, int nb_partial_rounds,
   return (nb_constants);
 }
 
-void poseidon_apply_sbox(blst_fr *ctxt, int full, int width) {
+blst_fr *poseidon_get_state_from_context(poseidon_ctxt_t *ctxt) {
+  return (ctxt->state);
+}
+
+int poseidon_get_state_size_from_context(poseidon_ctxt_t *ctxt) {
+  return (ctxt->state_size);
+}
+
+blst_fr *poseidon_get_mds_from_context(poseidon_ctxt_t *ctxt) {
+  // MDS is after the state
+  return (ctxt->state + ctxt->state_size);
+}
+
+blst_fr *poseidon_get_round_constants_from_context(poseidon_ctxt_t *ctxt) {
+  // round constants are after the state and the MDS
+  return (ctxt->state + ctxt->state_size + ctxt->state_size * ctxt->state_size);
+}
+
+void poseidon_apply_sbox(poseidon_ctxt_t *ctxt, int full) {
+  blst_fr *state = poseidon_get_state_from_context(ctxt);
+  int state_size = poseidon_get_state_size_from_context(ctxt);
   blst_fr buffer;
-  int partial_round_idx_sbox = width - 1;
+  int partial_round_idx_sbox = state_size - 1;
   int begin_idx = full ? 0 : partial_round_idx_sbox;
-  int end_idx = width;
+  int end_idx = state_size;
   for (int i = begin_idx; i < end_idx; i++) {
     // x * (x^2)^2
-    blst_fr_sqr(&buffer, ctxt + i);
+    blst_fr_sqr(&buffer, state + i);
     blst_fr_sqr(&buffer, &buffer);
-    blst_fr_mul(ctxt + i, &buffer, ctxt + i);
+    blst_fr_mul(state + i, &buffer, state + i);
   }
 }
 
-void poseidon_apply_matrix_multiplication(blst_fr *ctxt, int width,
-                                          int ark_len) {
+void poseidon_apply_matrix_multiplication(poseidon_ctxt_t *ctxt) {
+  int state_size = poseidon_get_state_size_from_context(ctxt);
   blst_fr buffer;
-  blst_fr res[width];
-  blst_fr *mds = ctxt + width + ark_len;
-  for (int i = 0; i < width; i++) {
-    for (int j = 0; j < width; j++) {
+  blst_fr res[state_size];
+  blst_fr *state = poseidon_get_state_from_context(ctxt);
+  blst_fr *mds = poseidon_get_mds_from_context(ctxt);
+  for (int i = 0; i < state_size; i++) {
+    for (int j = 0; j < state_size; j++) {
       if (j == 0) {
-        blst_fr_mul(res + i, mds + i * width + j, ctxt + j);
+        blst_fr_mul(res + i, mds + i * state_size + j, state + j);
       } else {
-        blst_fr_mul(&buffer, mds + i * width + j, ctxt + j);
+        blst_fr_mul(&buffer, mds + i * state_size + j, state + j);
         blst_fr_add(res + i, res + i, &buffer);
       }
     }
   }
-  for (int i = 0; i < width; i++) {
-    memcpy(ctxt + i, res + i, sizeof(blst_fr));
+  for (int i = 0; i < state_size; i++) {
+    memcpy(state + i, res + i, sizeof(blst_fr));
   }
 }
 
-int poseidon_apply_cst(blst_fr *ctxt, int width, int offset_ark) {
-  for (int i = 0; i < width; i++) {
-    blst_fr_add(ctxt + i, ctxt + i, ctxt + offset_ark + i);
+int poseidon_apply_cst(poseidon_ctxt_t *ctxt, int offset) {
+  int state_size = poseidon_get_state_size_from_context(ctxt);
+  blst_fr *state = poseidon_get_state_from_context(ctxt);
+  blst_fr *ark = poseidon_get_round_constants_from_context(ctxt);
+  for (int i = 0; i < state_size; i++) {
+    blst_fr_add(state + i, state + i, ark + offset++);
   }
-  return (offset_ark + width);
+  return (offset);
 }
 
-int poseidon_apply_batched_partial_round(blst_fr *ctxt, int batch_size,
-                                         int width, int offset_ark) {
+int poseidon_apply_batched_partial_round(poseidon_ctxt_t *ctxt,
+                                         int offset_ark) {
+  int batch_size = ctxt->batch_size;
+  int state_size = poseidon_get_state_size_from_context(ctxt);
   // FIXME: if batch_size is 0, fails
   int nb_tmp_var = batch_size - 1;
   blst_fr buffer;
-  blst_fr *ark = ctxt + offset_ark;
-  blst_fr intermediary_state[width + nb_tmp_var];
-  for (int i = 0; i < width; i++) {
-    memcpy(intermediary_state + i, ctxt + i, sizeof(blst_fr));
+  blst_fr *ark = poseidon_get_round_constants_from_context(ctxt);
+  blst_fr *state = poseidon_get_state_from_context(ctxt);
+  blst_fr intermediary_state[state_size + nb_tmp_var];
+  for (int i = 0; i < state_size; i++) {
+    memcpy(intermediary_state + i, state + i, sizeof(blst_fr));
   }
 
   // Apply sbox on the last element of the state
-  blst_fr_sqr(&buffer, intermediary_state + width - 1);
+  blst_fr_sqr(&buffer, intermediary_state + state_size - 1);
   blst_fr_sqr(&buffer, &buffer);
-  blst_fr_mul(intermediary_state + width - 1, &buffer,
-              intermediary_state + width - 1);
+  blst_fr_mul(intermediary_state + state_size - 1, &buffer,
+              intermediary_state + state_size - 1);
 
   // Computing the temporary variables
   for (int i = 0; i < nb_tmp_var; i++) {
     // we start with the first element
-    blst_fr_mul(intermediary_state + width + i, ark++, intermediary_state);
-    for (int j = 1; j < width + i; j++) {
-      blst_fr_mul(&buffer, ark++, intermediary_state + j);
-      blst_fr_add(intermediary_state + width + i,
-                  intermediary_state + width + i, &buffer);
+    blst_fr_mul(intermediary_state + state_size + i, ark + offset_ark++,
+                intermediary_state);
+    for (int j = 1; j < state_size + i; j++) {
+      blst_fr_mul(&buffer, ark + offset_ark++, intermediary_state + j);
+      blst_fr_add(intermediary_state + state_size + i,
+                  intermediary_state + state_size + i, &buffer);
     }
     // We add the constant
-    blst_fr_add(intermediary_state + width + i, intermediary_state + width + i,
-                ark++);
+    blst_fr_add(intermediary_state + state_size + i,
+                intermediary_state + state_size + i, ark + offset_ark++);
 
     // Applying sbox
-    blst_fr_sqr(&buffer, intermediary_state + i + width);
+    blst_fr_sqr(&buffer, intermediary_state + i + state_size);
     blst_fr_sqr(&buffer, &buffer);
-    blst_fr_mul(intermediary_state + i + width, &buffer,
-                intermediary_state + i + width);
+    blst_fr_mul(intermediary_state + i + state_size, &buffer,
+                intermediary_state + i + state_size);
   }
 
   // Computing the final state
-  for (int i = 0; i < width; i++) {
-    blst_fr_mul(ctxt + i, ark++, intermediary_state);
-    for (int j = 1; j < width + nb_tmp_var; j++) {
-      blst_fr_mul(&buffer, intermediary_state + j, ark++);
-      blst_fr_add(ctxt + i, &buffer, ctxt + i);
+  for (int i = 0; i < state_size; i++) {
+    blst_fr_mul(state + i, ark + offset_ark++, intermediary_state);
+    for (int j = 1; j < state_size + nb_tmp_var; j++) {
+      blst_fr_mul(&buffer, intermediary_state + j, ark + offset_ark++);
+      blst_fr_add(state + i, &buffer, state + i);
     }
-    blst_fr_add(ctxt + i, ctxt + i, ark++);
+    blst_fr_add(state + i, state + i, ark + offset_ark++);
   }
-  return ark - ctxt;
+  return (offset_ark);
 }
 
-void poseidon_apply_perm(blst_fr *ctxt, int width, int nb_full_rounds,
-                         int nb_partial_rounds, int batch_size) {
-  int nb_batched_partial_rounds = nb_partial_rounds / batch_size;
-  int nb_unbatched_partial_rounds = nb_partial_rounds % batch_size;
-  int ark_len = poseidon_compute_number_of_constants(
-      batch_size, nb_partial_rounds, nb_full_rounds, width);
-  int offset_ark = width;
-  offset_ark = poseidon_apply_cst(ctxt, width, offset_ark);
-  for (int i = 0; i < nb_full_rounds / 2; i++) {
-    poseidon_apply_sbox(ctxt, 1, width);
-    poseidon_apply_matrix_multiplication(ctxt, width, ark_len);
-    offset_ark = poseidon_apply_cst(ctxt, width, offset_ark);
+void poseidon_apply_permutation(poseidon_ctxt_t *ctxt) {
+  int nb_batched_partial_rounds = ctxt->nb_partial_rounds / ctxt->batch_size;
+  int nb_unbatched_partial_rounds = ctxt->nb_partial_rounds % ctxt->batch_size;
+  int offset_ark = 0;
+  offset_ark = poseidon_apply_cst(ctxt, offset_ark);
+  for (int i = 0; i < ctxt->nb_full_rounds / 2; i++) {
+    poseidon_apply_sbox(ctxt, 1);
+    poseidon_apply_matrix_multiplication(ctxt);
+    offset_ark = poseidon_apply_cst(ctxt, offset_ark);
   }
   for (int i = 0; i < nb_batched_partial_rounds; i++) {
-    offset_ark = poseidon_apply_batched_partial_round(ctxt, batch_size, width,
-                                                      offset_ark);
+    offset_ark = poseidon_apply_batched_partial_round(ctxt, offset_ark);
   }
   for (int i = 0; i < nb_unbatched_partial_rounds; i++) {
-    poseidon_apply_sbox(ctxt, 0, width);
-    poseidon_apply_matrix_multiplication(ctxt, width, ark_len);
-    offset_ark = poseidon_apply_cst(ctxt, width, offset_ark);
+    poseidon_apply_sbox(ctxt, 0);
+    poseidon_apply_matrix_multiplication(ctxt);
+    offset_ark = poseidon_apply_cst(ctxt, offset_ark);
   }
-  for (int i = 0; i < nb_full_rounds / 2; i++) {
-    poseidon_apply_sbox(ctxt, 1, width);
-    poseidon_apply_matrix_multiplication(ctxt, width, ark_len);
-    offset_ark = poseidon_apply_cst(ctxt, width, offset_ark);
+  for (int i = 0; i < ctxt->nb_full_rounds / 2; i++) {
+    poseidon_apply_sbox(ctxt, 1);
+    poseidon_apply_matrix_multiplication(ctxt);
+    offset_ark = poseidon_apply_cst(ctxt, offset_ark);
   }
 }

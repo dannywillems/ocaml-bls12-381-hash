@@ -1,80 +1,63 @@
-(** Implementation of an instantiation of
+(** Implementation of
     {{:https://eprint.iacr.org/2019/458.pdf} Poseidon} over the scalar field of
-    BLS12-381 for a security of 128 bits and with the permutation [x^5]. The
-    parameters of the instantiation are:
-    - state size = 3
-    - number of full rounds = 8
-    - number partial rounds = 56
-    - the partial rounds run the sbox on the last element of the state
-
-    These parameters have been generated using {{:
-    https://gitlab.com/dannywillems/ocaml-ec/-/tree/master/utils/poseidon-hash }
-    security_parameters.ml from Mec }.
-
-    The linear layer constants and the round keys can be generated using
-    {{:
-    https://gitlab.com/dannywillems/ocaml-ec/-/tree/master/utils/poseidon-hash }
-    generate_ark.ml and generate_mds.sage from Mec }. The constants must be
-    loaded at the top level using {!Poseidon128.constants_init}.
+    BLS12-381 for a security with the permutation [x^5].
 
     {b The current implementation only provides the functions to run a
        permutation. The user is responsible to build a hash function on top of
        it. } *)
-module Poseidon128 : sig
+module Poseidon : sig
   (** Context of the permutation *)
   type ctxt
 
-  (** [constants_init ark mds] initializes the constants for Poseidon.
-
-      {b Warnings: }
-         - The function does not verify the parameters are secured
-         - This function must be called before calling {!init},
-           {!apply_permutation} and {!get} *)
-  val constants_init :
-    Bls12_381.Fr.t array -> Bls12_381.Fr.t array array -> unit
-
-  (** [init a b c] returns a new context with an initialised state with the
-      value [[a, b, c]].
+  (** [allocate_ctxt state_size nb_full_rounds nb_partial_rounds batch_size
+      round_constants mds]. Allocate a context for a specific instance of Poseidon
   *)
-  val init : Bls12_381.Fr.t -> Bls12_381.Fr.t -> Bls12_381.Fr.t -> ctxt
+  val allocate_ctxt :
+    int ->
+    int ->
+    int ->
+    int ->
+    Bls12_381.Fr.t array ->
+    Bls12_381.Fr.t array array ->
+    ctxt
 
-  (** [apply_permutation ctxt] applies a permutation on the state. The context
-      is modified. *)
+  (** Return the current state of the context *)
+  val get_state : ctxt -> Bls12_381.Fr.t array
+
+  (** Return the state size of the context *)
+  val get_state_size : ctxt -> int
+
+  (** [set_state ctxt state]. Set the context state to the given value. The
+        value [state] must be of the same size than the expecting state *)
+  val set_state : ctxt -> Bls12_381.Fr.t array -> unit
+
+  (** Apply a permutation on the current state of the context *)
   val apply_permutation : ctxt -> unit
 
-  (** [get ctxt] returns the state of the permutation *)
-  val get : ctxt -> Bls12_381.Fr.t * Bls12_381.Fr.t * Bls12_381.Fr.t
-end
-
-module Poseidon : sig
-  (** Generate your own Poseidon instance *)
-  module Make (Parameters : sig
-    val nb_full_rounds : int
-
-    val nb_partial_rounds : int
-
-    val batch_size : int
-
-    val width : int
-
-    val ark : Bls12_381.Fr.t array
-
-    val mds : Bls12_381.Fr.t array array
-  end) : sig
-    (** Context of the permutation *)
-    type ctxt
-
-    (** [init inputs] returns a new context with an initialised state with the
-        value [inputs].
+  module Parameters : sig
+    (** Parameters for Poseidon with a state size of [3] for a security of
+        128bits. The value is:
+        - state size
+        - number of full rounds
+        - number of partial rounds
+        - batch size
+        - round constants
+        - mds
     *)
-    val init : Bls12_381.Fr.t array -> ctxt
+    val state_size_128_3 :
+      int * int * int * int * Bls12_381.Fr.t array * Bls12_381.Fr.t array array
 
-    (** [apply_permutation ctxt] applies a permutation on the state. The context
-        is modified. *)
-    val apply_permutation : ctxt -> unit
-
-    (** [get ctxt] returns the state of the permutation *)
-    val get : ctxt -> Bls12_381.Fr.t array
+    (** Parameters for Poseidon with a state size of [5] for a security of
+        256bits. The value is:
+        - state size
+        - number of full rounds
+        - number of partial rounds
+        - batch size
+        - round constants
+        - mds
+    *)
+    val state_size_256_5 :
+      int * int * int * int * Bls12_381.Fr.t array * Bls12_381.Fr.t array array
   end
 end
 
