@@ -1,5 +1,3 @@
-(copy_files ../test/{poseidon128_ark.ml,poseidon128_mds.ml})
-
 (executables
- (names bench_poseidon128 bench_rescue bench_anemoi bench_griffin)
+ (names bench_rescue bench_anemoi bench_griffin bench_poseidon)
  (libraries bls12-381 bls12-381-hash core core_bench))
