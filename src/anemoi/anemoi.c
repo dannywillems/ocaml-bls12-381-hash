@@ -769,12 +769,12 @@ void anemoi_jive_apply(anemoi_ctxt_t *ctxt) {
   }
 
   else if (ctxt->l == 4) {
-    for (int i = 0; i < 1; i++) {
+    for (int i = 0; i < 10; i++) {
       anemoi_jive_smaller_than_4_add_constant(ctxt, i);
       anemoi_jive_4_apply_linear_layer(state);
-      /* anemoi_jive_generic_apply_flystel(ctxt); */
+      anemoi_jive_generic_apply_flystel(ctxt);
     }
-    /* anemoi_jive_4_apply_linear_layer(state); */
+    anemoi_jive_4_apply_linear_layer(state);
   }
 
   else {
