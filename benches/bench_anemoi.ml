@@ -2,7 +2,7 @@ open Core_bench
 
 let t1 =
   let a, b = (Bls12_381.Fr.random (), Bls12_381.Fr.random ()) in
-  let name = "Benchmark AnemoiJive2" in
+  let name = "Benchmark AnemoiJive1 (compress)" in
   Bench.Test.create ~name (fun () ->
       ignore @@ Bls12_381_hash.Anemoi.jive128_1_compress a b)
 
@@ -21,7 +21,7 @@ let t2 l =
     else (None, None)
   in
   let state = Array.init state_size (fun _ -> Bls12_381.Fr.random ()) in
-  let name = Printf.sprintf "Benchmark AnemoiJive%d" state_size in
+  let name = Printf.sprintf "Benchmark AnemoiJive%d" l in
   let ctxt = Bls12_381_hash.Anemoi.allocate_ctxt ?mds ?constants l nb_rounds in
   let () = Bls12_381_hash.Anemoi.set_state ctxt state in
   Bench.Test.create ~name (fun () ->
