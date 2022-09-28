@@ -8,6 +8,9 @@ module Stubs = struct
   external apply_perm : ctxt -> unit
     = "caml_bls12_381_hash_griffin_apply_permutation_stubs"
 
+  external apply_one_round : ctxt -> int -> unit
+    = "caml_bls12_381_hash_griffin_apply_one_round_stubs"
+
   external get_state : Bls12_381.Fr.t array -> ctxt -> unit
     = "caml_bls12_381_hash_griffin_get_state_stubs"
 
@@ -27,6 +30,8 @@ let allocate_ctxt nb_rounds state_size constants alpha_beta_s =
   ctxt
 
 let apply_permutation ctxt = Stubs.apply_perm ctxt
+
+let apply_one_round ctxt i_round_key = Stubs.apply_one_round ctxt i_round_key
 
 let get_state_size ctxt = Stubs.get_state_size ctxt
 

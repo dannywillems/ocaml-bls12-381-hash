@@ -500,6 +500,22 @@ int griffin_add_constant(griffin_ctxt_t *ctxt, int i_round_key) {
   return (i_round_key);
 }
 
+int griffin_apply_one_round(griffin_ctxt_t *ctxt, int i_round_key) {
+  // S box
+  griffin_apply_non_linear_layer(ctxt);
+  // Apply linear layer
+  if (ctxt->state_size == 3) {
+    griffin_apply_linear_layer_3(ctxt);
+  } else if (ctxt->state_size == 4) {
+    griffin_apply_linear_layer_4(ctxt);
+  } else {
+    griffin_apply_linear_layer(ctxt);
+  }
+  // Constant
+  i_round_key = griffin_add_constant(ctxt, i_round_key);
+  return (i_round_key);
+}
+
 void griffin_apply_permutation(griffin_ctxt_t *ctxt) {
   int i_round_key = 0;
 
@@ -512,14 +528,6 @@ void griffin_apply_permutation(griffin_ctxt_t *ctxt) {
   }
 
   for (int i = 0; i < ctxt->nb_rounds; i++) {
-    griffin_apply_non_linear_layer(ctxt);
-    if (ctxt->state_size == 3) {
-      griffin_apply_linear_layer_3(ctxt);
-    } else if (ctxt->state_size == 4) {
-      griffin_apply_linear_layer_4(ctxt);
-    } else {
-      griffin_apply_linear_layer(ctxt);
-    }
-    i_round_key = griffin_add_constant(ctxt, i_round_key);
+    i_round_key = griffin_apply_one_round(ctxt, i_round_key);
   }
 }

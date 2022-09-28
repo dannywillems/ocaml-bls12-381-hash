@@ -218,6 +218,11 @@ module Griffin : sig
       is modified. *)
   val apply_permutation : ctxt -> unit
 
+  (** [apply_one_round ctxt i_round_key] applies only one round of the permutation on the
+      state. [i_round_key] is the index of the first round constant to use for the
+      round. The context is modified *)
+  val apply_one_round : ctxt -> int -> unit
+
   (** [set_state ctxt state]. Set the context state to the given value. The
       value [state] must be of the same size than the expecting state *)
   val set_state : ctxt -> Bls12_381.Fr.t array -> unit

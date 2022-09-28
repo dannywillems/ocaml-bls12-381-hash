@@ -15,6 +15,8 @@ typedef struct griffin_ctxt_s {
 
 void griffin_apply_permutation(griffin_ctxt_t *ctxt);
 
+int griffin_apply_one_round(griffin_ctxt_t *ctxt, int i_round_key);
+
 blst_fr *griffin_get_state_from_context(griffin_ctxt_t *ctxt);
 
 blst_fr *griffin_get_alpha_beta_from_context(griffin_ctxt_t *ctxt);

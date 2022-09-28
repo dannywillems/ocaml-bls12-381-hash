@@ -24,10 +24,9 @@ static struct custom_operations griffin_ctxt_ops = {
     custom_serialize_default,   custom_deserialize_default,
     custom_compare_ext_default, custom_fixed_length_default};
 
-CAMLprim value caml_bls12_381_hash_griffin_allocate_ctxt_stubs(value vnb_rounds,
-                                                          value vstate_size,
-                                                          value vconstants,
-                                                          value valpha_beta_s) {
+CAMLprim value caml_bls12_381_hash_griffin_allocate_ctxt_stubs(
+    value vnb_rounds, value vstate_size, value vconstants,
+    value valpha_beta_s) {
   CAMLparam4(vnb_rounds, vstate_size, vconstants, valpha_beta_s);
   CAMLlocal1(vblock);
   int state_size = Int_val(vstate_size);
@@ -76,7 +75,7 @@ CAMLprim value caml_bls12_381_hash_griffin_allocate_ctxt_stubs(value vnb_rounds,
 }
 
 CAMLprim value caml_bls12_381_hash_griffin_set_state_stubs(value vctxt,
-                                                      value vstate) {
+                                                           value vstate) {
   CAMLparam2(vctxt, vstate);
 
   griffin_ctxt_t *ctxt = Griffin_ctxt_val(vctxt);
@@ -89,15 +88,25 @@ CAMLprim value caml_bls12_381_hash_griffin_set_state_stubs(value vctxt,
   CAMLreturn(Val_unit);
 }
 
-CAMLprim value caml_bls12_381_hash_griffin_apply_permutation_stubs(value vctxt) {
+CAMLprim value
+caml_bls12_381_hash_griffin_apply_permutation_stubs(value vctxt) {
   CAMLparam1(vctxt);
   griffin_ctxt_t *ctxt = Griffin_ctxt_val(vctxt);
   griffin_apply_permutation(ctxt);
   CAMLreturn(Val_unit);
 }
 
+CAMLprim value caml_bls12_381_hash_griffin_apply_one_round_stubs(
+    value vctxt, value vi_round_key) {
+  CAMLparam2(vctxt, vi_round_key);
+  griffin_ctxt_t *ctxt = Griffin_ctxt_val(vctxt);
+  int i_round_key = Int_val(vi_round_key);
+  griffin_apply_one_round(ctxt, i_round_key);
+  CAMLreturn(Val_unit);
+}
+
 CAMLprim value caml_bls12_381_hash_griffin_get_state_stubs(value vbuffer,
-                                                      value vctxt) {
+                                                           value vctxt) {
   CAMLparam2(vbuffer, vctxt);
   griffin_ctxt_t *ctxt = Griffin_ctxt_val(vctxt);
   blst_fr *state = griffin_get_state_from_context(ctxt);
