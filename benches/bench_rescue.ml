@@ -1,6 +1,6 @@
 open Core_bench
 
-let t1 =
+let t_state_size_3 =
   let nb_rounds, state_size, mds, round_constants =
     Bls12_381_hash.Rescue.Parameters.state_size_3
   in
@@ -13,6 +13,6 @@ let t1 =
   Bench.Test.create ~name (fun () ->
       Bls12_381_hash.Rescue.apply_permutation ctxt)
 
-let command = Bench.make_command [t1]
+let command = Bench.make_command [t_state_size_3]
 
 let () = Core.Command.run command
