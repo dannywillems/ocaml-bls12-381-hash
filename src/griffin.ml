@@ -49,6 +49,12 @@ let get_state ctxt =
   state
 
 module Parameters = struct
+  let d = Bls12_381.Fr.of_string "5"
+
+  let d_inv =
+    Bls12_381.Fr.of_string
+      "20974350070050476191779096203274386335076221000211055129041463479975432473805"
+
   let state_size_3 =
     ( 12,
       3,

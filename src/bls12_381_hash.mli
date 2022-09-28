@@ -229,6 +229,13 @@ module Griffin : sig
   val get_state_size : ctxt -> int
 
   module Parameters : sig
+    (** Exponent for the substitution box. For BLS12-381, it is [5] *)
+    val d : Bls12_381.Fr.t
+
+    (** Inverse of the exponent for the substitution box. For BLS12-381, it is
+        [20974350070050476191779096203274386335076221000211055129041463479975432473805] *)
+    val d_inv : Bls12_381.Fr.t
+
     (** Parameters for Griffin with a state size of [3] for a security of
         128bits. The value is:
         - number of rounds
