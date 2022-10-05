@@ -152,49 +152,27 @@ void anemoi_jive_3_apply_linear_layer(blst_fr *ctxt) {
 
 // l = 4
 void anemoi_jive_4_apply_matrix(blst_fr *ctxt) {
-  blst_fr g_x1;
-  blst_fr g_square_x1;
-  blst_fr g_x0;
-  blst_fr g_square_x0;
-  blst_fr g_x3;
-  blst_fr g_x2;
   blst_fr tmp;
 
-  anemoi_fr_multiply_by_g(&g_x0, ctxt);
-  anemoi_fr_multiply_by_g(&g_square_x0, &g_x0);
-
-  anemoi_fr_multiply_by_g(&g_x1, ctxt + 1);
-  anemoi_fr_multiply_by_g(&g_square_x1, &g_x1);
-
-  anemoi_fr_multiply_by_g(&g_x2, ctxt + 2);
-
-  anemoi_fr_multiply_by_g(&g_x3, ctxt + 3);
-
-  // Copy x_1 for x_0 later
-  memcpy(&tmp, ctxt + 1, sizeof(blst_fr));
-
-  blst_fr_add(ctxt + 1, ctxt + 1, &g_x1);
-  blst_fr_add(ctxt + 1, ctxt + 1, ctxt);
-  blst_fr_add(ctxt + 1, ctxt + 1, &g_x2);
-  blst_fr_add(ctxt + 1, ctxt + 1, &g_x3);
-
-  blst_fr_add(ctxt, ctxt, &g_x0);
-  blst_fr_add(ctxt, ctxt, &tmp);
-  blst_fr_add(ctxt, ctxt, &g_x2);
-  blst_fr_add(ctxt, ctxt, &g_x3);
-  blst_fr_add(ctxt, ctxt, ctxt + 3);
-
-  // Copy x_2 for x_3 later
-  memcpy(&tmp, ctxt + 2, sizeof(blst_fr));
-  blst_fr_add(ctxt + 2, ctxt + 2, &g_x2);
-  blst_fr_add(ctxt + 2, ctxt + 2, &g_square_x1);
-  blst_fr_add(ctxt + 2, ctxt + 2, &g_x1);
+  // x[0] += x[1]
+  blst_fr_add(ctxt, ctxt, ctxt + 1);
+  // x[2] += x[3]
   blst_fr_add(ctxt + 2, ctxt + 2, ctxt + 3);
-
-  blst_fr_add(ctxt + 3, ctxt + 3, &g_x3);
-  blst_fr_add(ctxt + 3, ctxt + 3, &g_square_x0);
-  blst_fr_add(ctxt + 3, ctxt + 3, &g_square_x1);
+  // x[3] += g x[0]
+  anemoi_fr_multiply_by_g(&tmp, ctxt);
   blst_fr_add(ctxt + 3, ctxt + 3, &tmp);
+  // x[1] = g * (x[1] + x[2])
+  blst_fr_add(&tmp, ctxt + 1, ctxt + 2);
+  anemoi_fr_multiply_by_g(ctxt + 1, &tmp);
+  // x[0] += x[1]
+  blst_fr_add(ctxt, ctxt, ctxt + 1);
+  // x[2] += g x[3]
+  anemoi_fr_multiply_by_g(&tmp, ctxt + 3);
+  blst_fr_add(ctxt + 2, ctxt + 2, &tmp);
+  // x[1] += x[2]
+  blst_fr_add(ctxt + 1, ctxt + 1, ctxt + 2);
+  // x[3] += x[0]
+  blst_fr_add(ctxt + 3, ctxt + 3, ctxt);
 }
 
 void anemoi_jive_4_apply_linear_layer(blst_fr *ctxt) {
