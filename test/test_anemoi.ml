@@ -11,7 +11,7 @@
            security_level=128)
 *)
 
-let test_vectors_jive128_1 () =
+let test_vectors_anemoi128_1 () =
   let vectors =
     [ ( ( "35845669682800269995209049467553751861599775089532198376674489477778357560569",
           "28310433413288793552092391706285055875131165883761155923425672020460794794380"
@@ -54,7 +54,7 @@ let test_vectors_jive128_1 () =
       let x1 = Bls12_381.Fr.of_string x1_s in
       let x2 = Bls12_381.Fr.of_string x2_s in
       let exp_res = Bls12_381.Fr.of_string exp_res_s in
-      let res = Bls12_381_hash.Anemoi.jive128_1_compress x1 x2 in
+      let res = Bls12_381_hash.Anemoi.jive128_1 x1 x2 in
       if not (Bls12_381.Fr.eq res exp_res) then
         Alcotest.failf
           "Expected result = %s, computed result = %s, input = (%s, %s)"
@@ -64,7 +64,7 @@ let test_vectors_jive128_1 () =
           x2_s)
     vectors
 
-let test_vectors_jive128_2 () =
+let test_vectors_anemoi128_2 () =
   let vectors =
     [ ( ("0", "0", "0", "0"),
         ( "23506137766702864106501714498337645198425779982503345533323642665774237530743",
@@ -156,7 +156,7 @@ let test_vectors_jive128_2 () =
           y2_s)
     vectors
 
-let test_vectors_jive128_3 () =
+let test_vectors_anemoi128_3 () =
   let vectors =
     [ ( ("0", "0", "0", "0", "0", "0"),
         ( "33478314834223416808169927398566653899403429754255462666159894772887073320365",
@@ -255,7 +255,7 @@ let test_vectors_jive128_3 () =
           y3_s)
     vectors
 
-let test_vectors_jive128_4 () =
+let test_vectors_anemoi128_4 () =
   let vectors =
     [ ( ("0", "0", "0", "0", "0", "0", "0", "0"),
         ( "7706460525141057798581274838395425127394178058031335456383676808670282739597",
@@ -385,7 +385,7 @@ let test_state_functions () =
          "; "
          (List.map Bls12_381.Fr.to_string (Array.to_list output)))
 
-let test_anemoi_generic_with_l_one_is_anemoi_jive128_1_compress () =
+let test_anemoi_generic_with_l_one_is_anemoi_jive128_1 () =
   let l = 1 in
   let state_size = 2 * l in
   let nb_rounds = 19 in
@@ -396,35 +396,35 @@ let test_anemoi_generic_with_l_one_is_anemoi_jive128_1_compress () =
   let output = Bls12_381_hash.Anemoi.get_state ctxt in
   assert (
     Bls12_381.Fr.eq
-      (Bls12_381_hash.Anemoi.jive128_1_compress state.(0) state.(1))
+      (Bls12_381_hash.Anemoi.jive128_1 state.(0) state.(1))
       Bls12_381.Fr.(state.(0) + state.(1) + output.(0) + output.(1)))
 
 let () =
   let open Alcotest in
   run
-    "Anemoi"
-    [ ( "Jive128_1",
+    "The permutation Anemoi and the mode of operation Jive"
+    [ ( "From reference implementation",
         [ test_case
             "Tests vectors from reference implementation"
             `Quick
-            test_vectors_jive128_1 ] );
+            test_vectors_anemoi128_1 ] );
       ( "Generic instantiations",
         [ test_case
-            "l = 1 <==> jive128_1_compress"
+            "l = 1 <==> jive128_1"
             `Quick
-            test_anemoi_generic_with_l_one_is_anemoi_jive128_1_compress;
+            test_anemoi_generic_with_l_one_is_anemoi_jive128_1;
           test_case
             "l = 2 -> tests vectors from reference implementation"
             `Quick
-            test_vectors_jive128_2;
+            test_vectors_anemoi128_2;
           test_case
             "l = 4 -> tests vectors from reference implementation"
             `Quick
-            test_vectors_jive128_4;
+            test_vectors_anemoi128_4;
           test_case
             "l = 3 -> tests vectors from reference implementation"
             `Quick
-            test_vectors_jive128_3 ] );
+            test_vectors_anemoi128_3 ] );
       ( "Additional functions",
         [ test_case
             "State initialisation and get state"

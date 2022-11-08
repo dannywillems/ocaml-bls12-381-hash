@@ -20,11 +20,10 @@
 #define Is_some(v) Is_block(v)
 #endif
 
-value caml_bls12_381_hash_anemoi_jive128_1_compress_stubs(value vres, value vx,
-                                                          value vy) {
+value caml_bls12_381_hash_anemoi128_1_jive_stubs(value vres, value vx,
+                                                 value vy) {
   CAMLparam3(vres, vx, vy);
-  anemoi_jive128_1_compress(Blst_fr_val(vres), Blst_fr_val(vx),
-                            Blst_fr_val(vy));
+  anemoi128_1_jive(Blst_fr_val(vres), Blst_fr_val(vx), Blst_fr_val(vy));
   CAMLreturn(Val_unit);
 }
 
@@ -45,7 +44,7 @@ static struct custom_operations anemoi_ctxt_ops = {"anemoi_ctxt_t",
                                                    custom_compare_ext_default,
                                                    custom_fixed_length_default};
 
-CAMLprim value caml_bls12_381_hash_anemoi_jive_allocate_ctxt_stubs(
+CAMLprim value caml_bls12_381_hash_anemoi_allocate_ctxt_stubs(
     value vmds, value vconstants, value vl, value vnb_rounds) {
   CAMLparam4(vmds, vconstants, vl, vnb_rounds);
   CAMLlocal1(vblock);
@@ -110,8 +109,8 @@ CAMLprim value caml_bls12_381_hash_anemoi_jive_allocate_ctxt_stubs(
   CAMLreturn(vblock);
 }
 
-CAMLprim value caml_bls12_381_hash_anemoi_jive_get_state_stubs(value vbuffer,
-                                                               value vctxt) {
+CAMLprim value caml_bls12_381_hash_anemoi_get_state_stubs(value vbuffer,
+                                                          value vctxt) {
   CAMLparam2(vbuffer, vctxt);
   anemoi_ctxt_t *ctxt = Anemoi_ctxt_val(vctxt);
   blst_fr *state = anemoi_get_state_from_context(ctxt);
@@ -123,8 +122,8 @@ CAMLprim value caml_bls12_381_hash_anemoi_jive_get_state_stubs(value vbuffer,
   CAMLreturn(Val_unit);
 }
 
-CAMLprim value caml_bls12_381_hash_anemoi_jive_set_state_stubs(value vctxt,
-                                                               value vstate) {
+CAMLprim value caml_bls12_381_hash_anemoi_set_state_stubs(value vctxt,
+                                                          value vstate) {
   CAMLparam2(vctxt, vstate);
 
   anemoi_ctxt_t *ctxt = Anemoi_ctxt_val(vctxt);
@@ -137,18 +136,16 @@ CAMLprim value caml_bls12_381_hash_anemoi_jive_set_state_stubs(value vctxt,
   CAMLreturn(Val_unit);
 }
 
-CAMLprim value
-caml_bls12_381_hash_anemoi_jive_get_state_size_stubs(value vctxt) {
+CAMLprim value caml_bls12_381_hash_anemoi_get_state_size_stubs(value vctxt) {
   CAMLparam1(vctxt);
   anemoi_ctxt_t *ctxt = Anemoi_ctxt_val(vctxt);
   CAMLreturn(Val_int(anemoi_get_state_size_from_context(ctxt)));
 }
 
-CAMLprim value
-caml_bls12_381_hash_anemoi_jive_apply_permutation_stubs(value vctxt) {
+CAMLprim value caml_bls12_381_hash_anemoi_apply_permutation_stubs(value vctxt) {
   CAMLparam1(vctxt);
   anemoi_ctxt_t *ctxt = Anemoi_ctxt_val(vctxt);
-  anemoi_jive_apply_permutation(ctxt);
+  anemoi_apply_permutation(ctxt);
   CAMLreturn(Val_unit);
 }
 

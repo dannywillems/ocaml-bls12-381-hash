@@ -94,7 +94,7 @@ static blst_fr DELTA = {.l = {15811494917868205788ul, 16624336857528583898ul,
                               17920762862402342329ul, 7408687358795335574ul}};
 
 // These values depend on the input size
-static blst_fr ANEMOI_JIVE_ROUND_CONSTANTS_128BITS_INPUT_SIZE_1[NB_CONSTANTS_128BITS_INPUT_SIZE_1] = {
+static blst_fr ANEMOI_ROUND_CONSTANTS_128BITS_INPUT_SIZE_1[NB_CONSTANTS_128BITS_INPUT_SIZE_1] = {
     // We interleave the constants C and D two by two
     // C0
     // 39
@@ -862,9 +862,9 @@ static blst_fr ANEMOI_ROUND_CONSTANTS_D[76] = {
     {.l = {15461192136796796924ul, 2458970041512006875ul, 8823153217495985316ul,
            2980181782225348831ul}}};
 
-void anemoi_jive128_1_compress(blst_fr *res, blst_fr *x, blst_fr *y);
+void anemoi128_1_jive(blst_fr *res, blst_fr *x, blst_fr *y);
 
-void anemoi_jive_apply_permutation(anemoi_ctxt_t *ctxt);
+void anemoi_apply_permutation(anemoi_ctxt_t *ctxt);
 
 void anemoi_apply_one_round(anemoi_ctxt_t *ctxt, int idx);
 

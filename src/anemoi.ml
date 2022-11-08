@@ -1,31 +1,31 @@
 module Stubs = struct
   type ctxt
 
-  external anemoi_jive128_1_compress :
+  external anemoi128_1_jive :
     Bls12_381.Fr.t -> Bls12_381.Fr.t -> Bls12_381.Fr.t -> unit
-    = "caml_bls12_381_hash_anemoi_jive128_1_compress_stubs"
+    = "caml_bls12_381_hash_anemoi128_1_jive_stubs"
 
   external get_state : Bls12_381.Fr.t array -> ctxt -> unit
-    = "caml_bls12_381_hash_anemoi_jive_get_state_stubs"
+    = "caml_bls12_381_hash_anemoi_get_state_stubs"
 
   external get_state_size : ctxt -> int
-    = "caml_bls12_381_hash_anemoi_jive_get_state_size_stubs"
+    = "caml_bls12_381_hash_anemoi_get_state_size_stubs"
 
   external set_state : ctxt -> Bls12_381.Fr.t array -> unit
-    = "caml_bls12_381_hash_anemoi_jive_set_state_stubs"
+    = "caml_bls12_381_hash_anemoi_set_state_stubs"
 
   external anemoi_apply_one_round : ctxt -> int -> unit
     = "caml_bls12_381_hash_anemoi_apply_one_round_stubs"
 
-  external anemoi_jive_apply_permutation : ctxt -> unit
-    = "caml_bls12_381_hash_anemoi_jive_apply_permutation_stubs"
+  external anemoi_apply_permutation : ctxt -> unit
+    = "caml_bls12_381_hash_anemoi_apply_permutation_stubs"
 
-  external anemoi_jive_allocate_ctxt :
+  external anemoi_allocate_ctxt :
     ?mds:Bls12_381.Fr.t array array ->
     ?constants:Bls12_381.Fr.t array ->
     int ->
     int ->
-    ctxt = "caml_bls12_381_hash_anemoi_jive_allocate_ctxt_stubs"
+    ctxt = "caml_bls12_381_hash_anemoi_allocate_ctxt_stubs"
 end
 
 type ctxt = Stubs.ctxt
@@ -36,7 +36,7 @@ let allocate_ctxt ?mds ?constants size nb_rounds =
     failwith
       "For instances with l > 4 the constants and the matrix for the linear \
        layer must be given" ;
-  let ctxt = Stubs.anemoi_jive_allocate_ctxt ?mds ?constants size nb_rounds in
+  let ctxt = Stubs.anemoi_allocate_ctxt ?mds ?constants size nb_rounds in
   ctxt
 
 let set_state ctxt state =
@@ -61,11 +61,11 @@ let get_state ctxt =
 
 let apply_one_round ctxt idx = Stubs.anemoi_apply_one_round ctxt idx
 
-let apply_permutation ctxt = Stubs.anemoi_jive_apply_permutation ctxt
+let apply_permutation ctxt = Stubs.anemoi_apply_permutation ctxt
 
-let jive128_1_compress x y =
+let jive128_1 x y =
   let res = Bls12_381.Fr.(copy zero) in
-  Stubs.anemoi_jive128_1_compress res x y ;
+  Stubs.anemoi128_1_jive res x y ;
   res
 
 module Parameters = struct

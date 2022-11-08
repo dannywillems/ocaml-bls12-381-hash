@@ -110,8 +110,8 @@ module Rescue : sig
   end
 end
 
-(** Implementation of {{: https://eprint.iacr.org/2022/840}
-    AnemoiJive } over the scalar field of BLS12-381.
+(** Implementation of the permutation {{: https://eprint.iacr.org/2022/840}
+    Anemoi and Jive} over the scalar field of BLS12-381.
 *)
 module Anemoi : sig
   (** A context contains the state and the instance parameters *)
@@ -144,9 +144,9 @@ module Anemoi : sig
   (** Apply a permutation on the current state of the context *)
   val apply_permutation : ctxt -> unit
 
-  (** [jive128_1_compress x y] calls AnemoiJive for [l = 1] on [x] and [y] to
-      compute [(u, v)] and returns [x + y + u + v] *)
-  val jive128_1_compress : Bls12_381.Fr.t -> Bls12_381.Fr.t -> Bls12_381.Fr.t
+  (** [jive128_1 x y] calls the permutation Anemoi for [l = 1] with the state [S = (x, y)] and
+      apply Jive on the output *)
+  val jive128_1 : Bls12_381.Fr.t -> Bls12_381.Fr.t -> Bls12_381.Fr.t
 
   (** Set of parameters for BLS12-381, and parameters for specific
      instantiations given in the reference paper *)
