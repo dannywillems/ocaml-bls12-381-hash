@@ -168,12 +168,11 @@ void anemoi_jive_4_apply_linear_layer(anemoi_ctxt_t *ctxt) {
 }
 
 void anemoi_jive_addchain_alpha_inv(blst_fr *res, blst_fr *x) {
-  // Allocating on the heap 32 bytes * 36 (= 1152 bytes) for intermediary
+  // Allocating on the stack 32 bytes * 36 (= 1152 bytes) for intermediary
   // variables to compute the addition chain. Less values might be required.
   // There is still place for improvements.
   // Values are allocated in a contiguous array to hope using the CPU cache.
-  // The stack might be too small therefore the heap is used.
-  blst_fr *tmp = malloc(sizeof(blst_fr) * 36);
+  blst_fr tmp[36];
   // _10      = 2*1
   //   -> tmp = x * x
   blst_fr_sqr(tmp, x);
