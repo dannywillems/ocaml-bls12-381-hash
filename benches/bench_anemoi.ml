@@ -2,9 +2,9 @@ open Core_bench
 
 let t1 =
   let a, b = (Bls12_381.Fr.random (), Bls12_381.Fr.random ()) in
-  let name = "Benchmark AnemoiJive1 (compress)" in
+  let name = "Benchmark AnemoiJive128_1" in
   Bench.Test.create ~name (fun () ->
-      ignore @@ Bls12_381_hash.Anemoi.jive128_1_compress a b)
+      ignore @@ Bls12_381_hash.Anemoi.jive128_1 a b)
 
 let t2 l =
   let state_size = l * 2 in
