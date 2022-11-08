@@ -616,10 +616,12 @@ void anemoi_jive_generic_apply_flystel(anemoi_ctxt_t *ctxt) {
   }
 }
 
-void anemoi_jive_smaller_than_4_add_constant(anemoi_ctxt_t *ctxt, int i_round) {
+void anemoi_jive_smaller_than_4_add_constant(anemoi_ctxt_t *ctxt, int idx) {
   // NB: 4 is the jump to perform as the constants are for up to l = 4. If we
   // generate for more instances, this value must be changed.
   blst_fr *state = anemoi_get_state_from_context(ctxt);
+
+  int i_round = idx / (2 * ctxt->l);
 
   for (int i = 0; i < ctxt->l; i++) {
     blst_fr_add(state + i, state + i,
@@ -629,7 +631,7 @@ void anemoi_jive_smaller_than_4_add_constant(anemoi_ctxt_t *ctxt, int i_round) {
   }
 }
 
-int anemoi_jive_generic_add_constant(anemoi_ctxt_t *ctxt, int i_rc) {
+void anemoi_jive_generic_add_constant(anemoi_ctxt_t *ctxt, int i_rc) {
   // NB: 4 is the jump to perform as the constants are for up to l = 4. If we
   // generate for more instances, this value must be changed.
   blst_fr *state = anemoi_get_state_from_context(ctxt);
@@ -642,7 +644,6 @@ int anemoi_jive_generic_add_constant(anemoi_ctxt_t *ctxt, int i_rc) {
     blst_fr_add(state_x + i, state_x + i, constants_x + i_rc);
     blst_fr_add(state_y + i, state_y + i, constants_y + i_rc++);
   }
-  return (i_rc);
 }
 
 void anemoi_jive_generic_apply_linear_layer(anemoi_ctxt_t *ctxt) {
@@ -693,49 +694,58 @@ void anemoi_jive_generic_apply_linear_layer(anemoi_ctxt_t *ctxt) {
   }
 }
 
-void anemoi_jive_apply(anemoi_ctxt_t *ctxt) {
-  int i_round_constants = 0;
-
+void anemoi_apply_one_round(anemoi_ctxt_t *ctxt, int idx) {
   blst_fr *state = anemoi_get_state_from_context(ctxt);
 
   if (ctxt->l == 1) {
-    anemoi_jive_1_apply(state);
+    anemoi_jive_1_add_constant(state, idx);
+    anemoi_jive_1_apply_linear_layer(state);
+    anemoi_jive_1_apply_flystel(state);
   }
 
   else if (ctxt->l == 2) {
-    for (int i = 0; i < 12; i++) {
-      anemoi_jive_smaller_than_4_add_constant(ctxt, i);
-      anemoi_jive_2_apply_linear_layer(state);
-      anemoi_jive_generic_apply_flystel(ctxt);
-    }
+    anemoi_jive_smaller_than_4_add_constant(ctxt, idx);
+    anemoi_jive_2_apply_linear_layer(state);
+    anemoi_jive_generic_apply_flystel(ctxt);
+  } else if (ctxt->l == 3) {
+    anemoi_jive_smaller_than_4_add_constant(ctxt, idx);
+    anemoi_jive_3_apply_linear_layer(ctxt);
+    anemoi_jive_generic_apply_flystel(ctxt);
+  } else if (ctxt->l == 4) {
+    anemoi_jive_smaller_than_4_add_constant(ctxt, idx);
+    anemoi_jive_4_apply_linear_layer(ctxt);
+    anemoi_jive_generic_apply_flystel(ctxt);
+  } else {
+    anemoi_jive_generic_add_constant(ctxt, idx);
+    anemoi_jive_generic_apply_linear_layer(ctxt);
+    anemoi_jive_generic_apply_flystel(ctxt);
+  }
+}
+
+void anemoi_jive_apply_permutation(anemoi_ctxt_t *ctxt) {
+  blst_fr *state = anemoi_get_state_from_context(ctxt);
+
+  for (int i = 0; i < ctxt->nb_rounds; i++) {
+    anemoi_apply_one_round(ctxt, 2 * i * ctxt->l);
+  }
+
+  if (ctxt->l == 1) {
+    anemoi_jive_1_apply_linear_layer(state);
+  }
+
+  else if (ctxt->l == 2) {
     anemoi_jive_2_apply_linear_layer(state);
   }
 
   else if (ctxt->l == 3) {
-    for (int i = 0; i < 10; i++) {
-      anemoi_jive_smaller_than_4_add_constant(ctxt, i);
-      anemoi_jive_3_apply_linear_layer(ctxt);
-      anemoi_jive_generic_apply_flystel(ctxt);
-    }
     anemoi_jive_3_apply_linear_layer(ctxt);
   }
 
   else if (ctxt->l == 4) {
-    for (int i = 0; i < 10; i++) {
-      anemoi_jive_smaller_than_4_add_constant(ctxt, i);
-      anemoi_jive_4_apply_linear_layer(ctxt);
-      anemoi_jive_generic_apply_flystel(ctxt);
-    }
     anemoi_jive_4_apply_linear_layer(ctxt);
   }
 
   else {
-    for (int i = 0; i < ctxt->nb_rounds; i++) {
-      i_round_constants =
-          anemoi_jive_generic_add_constant(ctxt, i_round_constants);
-      anemoi_jive_generic_apply_linear_layer(ctxt);
-      anemoi_jive_generic_apply_flystel(ctxt);
-    }
     anemoi_jive_generic_apply_linear_layer(ctxt);
   }
 }

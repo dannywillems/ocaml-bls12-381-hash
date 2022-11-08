@@ -14,8 +14,11 @@ module Stubs = struct
   external set_state : ctxt -> Bls12_381.Fr.t array -> unit
     = "caml_bls12_381_hash_anemoi_jive_set_state_stubs"
 
-  external anemoi_jive_apply : ctxt -> unit
-    = "caml_bls12_381_hash_anemoi_jive_apply_stubs"
+  external anemoi_apply_one_round : ctxt -> int -> unit
+    = "caml_bls12_381_hash_anemoi_apply_one_round_stubs"
+
+  external anemoi_jive_apply_permutation : ctxt -> unit
+    = "caml_bls12_381_hash_anemoi_jive_apply_permutation_stubs"
 
   external anemoi_jive_allocate_ctxt :
     ?mds:Bls12_381.Fr.t array array ->
@@ -56,7 +59,9 @@ let get_state ctxt =
   Stubs.get_state state ctxt ;
   state
 
-let apply_permutation ctxt = Stubs.anemoi_jive_apply ctxt
+let apply_one_round ctxt idx = Stubs.anemoi_apply_one_round ctxt idx
+
+let apply_permutation ctxt = Stubs.anemoi_jive_apply_permutation ctxt
 
 let jive128_1_compress x y =
   let res = Bls12_381.Fr.(copy zero) in

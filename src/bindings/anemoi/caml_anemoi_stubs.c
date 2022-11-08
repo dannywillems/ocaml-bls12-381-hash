@@ -45,10 +45,8 @@ static struct custom_operations anemoi_ctxt_ops = {"anemoi_ctxt_t",
                                                    custom_compare_ext_default,
                                                    custom_fixed_length_default};
 
-CAMLprim value caml_bls12_381_hash_anemoi_jive_allocate_ctxt_stubs(value vmds,
-                                                                   value vconstants,
-                                                                   value vl,
-                                                                   value vnb_rounds) {
+CAMLprim value caml_bls12_381_hash_anemoi_jive_allocate_ctxt_stubs(
+    value vmds, value vconstants, value vl, value vnb_rounds) {
   CAMLparam4(vmds, vconstants, vl, vnb_rounds);
   CAMLlocal1(vblock);
 
@@ -146,9 +144,19 @@ caml_bls12_381_hash_anemoi_jive_get_state_size_stubs(value vctxt) {
   CAMLreturn(Val_int(anemoi_get_state_size_from_context(ctxt)));
 }
 
-CAMLprim value caml_bls12_381_hash_anemoi_jive_apply_stubs(value vctxt) {
+CAMLprim value
+caml_bls12_381_hash_anemoi_jive_apply_permutation_stubs(value vctxt) {
   CAMLparam1(vctxt);
   anemoi_ctxt_t *ctxt = Anemoi_ctxt_val(vctxt);
-  anemoi_jive_apply(ctxt);
+  anemoi_jive_apply_permutation(ctxt);
+  CAMLreturn(Val_unit);
+}
+
+CAMLprim value caml_bls12_381_hash_anemoi_apply_one_round_stubs(value vctxt,
+                                                                value vidx) {
+  CAMLparam2(vctxt, vidx);
+  anemoi_ctxt_t *ctxt = Anemoi_ctxt_val(vctxt);
+  int idx = Int_val(vidx);
+  anemoi_apply_one_round(ctxt, idx);
   CAMLreturn(Val_unit);
 }

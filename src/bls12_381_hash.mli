@@ -136,6 +136,11 @@ module Anemoi : sig
       value [state] must be of the same size than the expecting state *)
   val set_state : ctxt -> Bls12_381.Fr.t array -> unit
 
+  (** [apply_one_round ctxt i_round_key] applies only one round of the permutation on the
+      state. [i_round_key] is the index of the first round constant to use for the
+      round. The context is modified *)
+  val apply_one_round : ctxt -> int -> unit
+
   (** Apply a permutation on the current state of the context *)
   val apply_permutation : ctxt -> unit
 

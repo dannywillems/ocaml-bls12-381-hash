@@ -864,7 +864,9 @@ static blst_fr ANEMOI_ROUND_CONSTANTS_D[76] = {
 
 void anemoi_jive128_1_compress(blst_fr *res, blst_fr *x, blst_fr *y);
 
-void anemoi_jive_apply(anemoi_ctxt_t *ctxt);
+void anemoi_jive_apply_permutation(anemoi_ctxt_t *ctxt);
+
+void anemoi_apply_one_round(anemoi_ctxt_t *ctxt, int idx);
 
 blst_fr *anemoi_get_state_from_context(anemoi_ctxt_t *ctxt);
 
