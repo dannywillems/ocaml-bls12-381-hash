@@ -110,8 +110,12 @@ module Rescue : sig
   end
 end
 
-(** Implementation of the permutation {{: https://eprint.iacr.org/2022/840}
-    Anemoi and Jive} over the scalar field of BLS12-381.
+(** Implementation of {{: https://eprint.iacr.org/2022/840}
+    the permutation Anemoi and the mode of operation Jive} over the scalar field
+    of BLS12-381.
+
+    The state of the permutation Anemoi is [m], where [m] is a multiple of [2].
+    It is commonly refered by [l] such that [m = 2 l].
 *)
 module Anemoi : sig
   (** A context contains the state and the instance parameters *)
@@ -138,7 +142,7 @@ module Anemoi : sig
 
   (** [apply_one_round ctxt i_round_key] applies only one round of the permutation on the
       state. [i_round_key] is the index of the first round constant to use for the
-      round. The context is modified *)
+      round. The context is modified. *)
   val apply_one_round : ctxt -> int -> unit
 
   (** Apply a permutation on the current state of the context *)
@@ -172,7 +176,8 @@ module Anemoi : sig
     (** Set to [0] for BLS12-381 *)
     val gamma : Bls12_381.Fr.t
 
-    (** Parameters for AnemoiJive with [l = 1] and 128 bits of security
+    (** Parameters for the permutation Anemoi for a state size of [m = 2] (i.e.
+        [l = 1]) and 128 bits of security
         The parameters are:
         - number of rounds
         - l
@@ -182,7 +187,8 @@ module Anemoi : sig
     val state_size_1 :
       int * int * Bls12_381.Fr.t array array * Bls12_381.Fr.t array
 
-    (** Parameters for AnemoiJive with [l = 2] and 128 bits of security
+    (** Parameters for the permutation Anemoi for a state size of [m = 4] (i.e.
+        [l = 2]) and 128 bits of security.
         The parameters are:
         - number of rounds
         - l
@@ -192,7 +198,8 @@ module Anemoi : sig
     val state_size_2 :
       int * int * Bls12_381.Fr.t array array * Bls12_381.Fr.t array
 
-    (** Parameters for AnemoiJive with [l = 3] and 128 bits of security
+    (** Parameters for the permutation Anemoi for a state size of [m = 6] (i.e.
+        [l = 3]) and 128 bits of security.
         The parameters are:
         - number of rounds
         - l
