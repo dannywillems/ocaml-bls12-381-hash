@@ -388,7 +388,7 @@ let allocate_ctxt parameters =
   if state_size mod 2 = 1 then
     failwith "The state size given in parameters must be a multiple of 2" ;
   let l = state_size / 2 in
-  if l <= 0 then failwith "Size must be at least 1" ;
+  if state_size <= 0 then failwith "State size must be at least 2" ;
   let mds = if l > 4 then Some parameters.Parameters.linear_layer else None in
   let constants =
     if l > 4 then Some parameters.Parameters.round_constants else None
