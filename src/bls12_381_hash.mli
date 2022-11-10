@@ -128,7 +128,13 @@ module Anemoi : sig
         value of type {!t}. If the [state_size] is [2], [4], [6] or [8] and
         [security = 128], an exception is raised. The library enforces the user
         to use the default security parameters and an optimised implementation
-        is provided in these cases *)
+        is provided in these cases.
+
+        @deprecated It is highly recommended to follow the recommandation in the paper for
+        the choice of security parameters. Please open an issue if you need
+        support for other instances than the default parameters provided by the
+        library.
+    *)
     val create :
       int ->
       int ->
@@ -136,6 +142,11 @@ module Anemoi : sig
       Bls12_381.Fr.t array ->
       Bls12_381.Fr.t array array ->
       t
+      [@@deprecated
+        "It is highly recommended to follow the recommandation in the paper \
+         for the choice of security parameters. Please open an issue if you \
+         need support for other instances than the default parameters provided \
+         by the library. "]
 
     (** Exponent for the substitution box. For BLS12-381, it is [5] *)
     val alpha : Bls12_381.Fr.t
