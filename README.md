@@ -1,22 +1,14 @@
-# OCaml implementation of BLS12-381
+# Fast implementation of hash functions over the scalar field of BLS12-381
 
 **Use with caution before release 1.0.0**
 
+Documentation available [here](https://nomadic-labs.gitlab.io/cryptography/ocaml-bls12-381-hash/bls12-381-hash/).
+
 This library provides a fast implementation of:
-- an instantiation of
-  [Poseidon](https://eprint.iacr.org/2019/458.pdf) providing a security of
-  128 bits. See [the
-  documentation](https://dannywillems.gitlab.io/ocaml-bls12-381-hash/bls12-381-hash/Bls12_381_hash/Poseidon128/index.html)
-  for more information on the used parameters.
-- an instantiation of
-  [Rescue](https://eprint.iacr.org/2019/426.pdf) providing a security of
-  128 bits. See [the
-  documentation](https://dannywillems.gitlab.io/ocaml-bls12-381-hash/bls12-381-hash/Bls12_381_hash/Rescue/index.html)
-  for more information on the used parameters.
-- an instantiation of [Anemoi](https://eprint.iacr.org/2022/840) providing a
-  security of 128 bits. See [the
-  documentation](https://dannywillems.gitlab.io/ocaml-bls12-381-hash/bls12-381-hash/Bls12_381_hash/Anemoi/index.html)
-  for more information on the used parameters.
+- [Poseidon](https://eprint.iacr.org/2019/458)
+- [Rescue](https://eprint.iacr.org/2019/426)
+- [Anemoi](https://eprint.iacr.org/2022/840)
+- [Griffin](https://eprint.iacr.org/2022/403)
 
 ## Install
 
