@@ -30,11 +30,28 @@ end
 
 module Parameters = struct
   type t =
-    { state_size : int;
+    { security : int;
+      state_size : int;
       nb_rounds : int;
       linear_layer : Bls12_381.Fr.t array array;
       round_constants : Bls12_381.Fr.t array
     }
+
+  let create security state_size nb_rounds round_constants linear_layer =
+    if state_size mod 2 = 1 then failwith "State size must be a multiple of 2" ;
+    if state_size = 2 || state_size = 4 || state_size = 6 || state_size = 8 then
+      if security = 128 then
+        failwith
+          (Printf.sprintf
+             "The library enforces the user to use default security parameters \
+              when a security of 128bits is required. Please use the \
+              parameters security_128_state_size_%d"
+             state_size)
+      else
+        failwith
+          "For the given state size, the library only supports 128bits of \
+           security. Please open an issue"
+    else { security; state_size; nb_rounds; round_constants; linear_layer }
 
   let g = Bls12_381.Fr.of_string "7"
 
@@ -53,7 +70,8 @@ module Parameters = struct
   let gamma = Bls12_381.Fr.zero
 
   let security_128_state_size_2 =
-    { nb_rounds = 19;
+    { security = 128;
+      nb_rounds = 19;
       state_size = 2;
       linear_layer = Bls12_381.Fr.[| [| one; g |]; [| g; square g + one |] |];
       round_constants =
@@ -137,7 +155,8 @@ module Parameters = struct
     }
 
   let security_128_state_size_4 =
-    { nb_rounds = 12;
+    { security = 128;
+      nb_rounds = 12;
       state_size = 4;
       linear_layer = Bls12_381.Fr.[| [| one; g |]; [| g; square g + one |] |];
       round_constants =
@@ -241,7 +260,8 @@ module Parameters = struct
     }
 
   let security_128_state_size_6 =
-    { nb_rounds = 10;
+    { security = 128;
+      nb_rounds = 10;
       state_size = 6;
       linear_layer =
         Bls12_381.Fr.
@@ -374,7 +394,8 @@ module Parameters = struct
     }
 
   let security_128_state_size_8 =
-    { nb_rounds = 10;
+    { security = 128;
+      nb_rounds = 10;
       state_size = 8;
       round_constants = [||];
       linear_layer = [||]

@@ -121,18 +121,21 @@ module Anemoi : sig
   (** Set of parameters for BLS12-381, and parameters for specific
      instantiations given in the reference paper *)
   module Parameters : sig
-    (** The type representing the set of parameters for a given instance.
-        - [state_size] is the state size of the permutation, noted [m] in the paper
-        - [nb_rounds] is the number of rounds
-        - [linear_layer] is the MDS matrix used for the linear layer
-        - [round_constants] are the round constants
-    *)
-    type t =
-      { state_size : int;
-        nb_rounds : int;
-        linear_layer : Bls12_381.Fr.t array array;
-        round_constants : Bls12_381.Fr.t array
-      }
+    (** The type representing the set of parameters for a given instance *)
+    type t
+
+    (** [create security state_size nb_rounds round_constants linear_layer] creates a
+        value of type {!t}. If the [state_size] is [2], [4], [6] or [8] and
+        [security = 128], an exception is raised. The library enforces the user
+        to use the default security parameters and an optimised implementation
+        is provided in these cases *)
+    val create :
+      int ->
+      int ->
+      int ->
+      Bls12_381.Fr.t array ->
+      Bls12_381.Fr.t array array ->
+      t
 
     (** Exponent for the substitution box. For BLS12-381, it is [5] *)
     val alpha : Bls12_381.Fr.t

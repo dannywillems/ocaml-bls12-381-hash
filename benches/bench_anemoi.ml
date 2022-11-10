@@ -32,12 +32,12 @@ let t2 l =
     else if state_size = 8 then
       Bls12_381_hash.Anemoi.Parameters.security_128_state_size_8
     else
-      Bls12_381_hash.Anemoi.Parameters.
-        { nb_rounds;
-          state_size;
-          linear_layer = Option.get mds;
-          round_constants = Option.get constants
-        }
+      Bls12_381_hash.Anemoi.Parameters.create
+        128
+        state_size
+        nb_rounds
+        (Option.get constants)
+        (Option.get mds)
   in
   let ctxt = Bls12_381_hash.Anemoi.allocate_ctxt parameters in
   let () = Bls12_381_hash.Anemoi.set_state ctxt state in

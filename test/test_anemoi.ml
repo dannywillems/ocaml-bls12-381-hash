@@ -359,7 +359,7 @@ let test_vectors_anemoi128_4 () =
     vectors
 
 let test_state_functions () =
-  let l = 1 + Random.int 10 in
+  let l = 5 + Random.int 10 in
   let mds =
     Array.init l (fun _ -> Array.init l (fun _ -> Bls12_381.Fr.random ()))
   in
@@ -370,8 +370,12 @@ let test_state_functions () =
   let state_size = 2 * l in
   let state = Array.init state_size (fun _ -> Bls12_381.Fr.random ()) in
   let parameters =
-    Bls12_381_hash.Anemoi.Parameters.
-      { state_size; linear_layer = mds; nb_rounds; round_constants = constants }
+    Bls12_381_hash.Anemoi.Parameters.create
+      128
+      state_size
+      nb_rounds
+      constants
+      mds
   in
   let ctxt = Bls12_381_hash.Anemoi.allocate_ctxt parameters in
   let () = Bls12_381_hash.Anemoi.set_state ctxt state in
@@ -387,9 +391,7 @@ let test_state_functions () =
          (List.map Bls12_381.Fr.to_string (Array.to_list output)))
 
 let test_anemoi_generic_with_l_one_is_anemoi_jive128_1 () =
-  let state_size =
-    Bls12_381_hash.Anemoi.Parameters.security_128_state_size_2.state_size
-  in
+  let state_size = 2 in
   let state = Array.init state_size (fun _ -> Bls12_381.Fr.random ()) in
   let ctxt =
     Bls12_381_hash.Anemoi.(allocate_ctxt Parameters.security_128_state_size_2)
