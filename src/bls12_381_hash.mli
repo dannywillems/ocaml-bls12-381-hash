@@ -118,43 +118,22 @@ end
     It is commonly refered by [l] such that [m = 2 l].
 *)
 module Anemoi : sig
-  (** A context contains the state and the instance parameters *)
-  type ctxt
-
-  (** [allocate_ctxt ?mds ?constants l nb_rounds]. Allocate a context for a
-      specific instance of Anemoi *)
-  val allocate_ctxt :
-    ?mds:Bls12_381.Fr.t array array ->
-    ?constants:Bls12_381.Fr.t array ->
-    int ->
-    int ->
-    ctxt
-
-  (** Return the current state of the context *)
-  val get_state : ctxt -> Bls12_381.Fr.t array
-
-  (** Return the state size of the context *)
-  val get_state_size : ctxt -> int
-
-  (** [set_state ctxt state]. Set the context state to the given value. The
-      value [state] must be of the same size than the expecting state *)
-  val set_state : ctxt -> Bls12_381.Fr.t array -> unit
-
-  (** [apply_one_round ctxt i_round_key] applies only one round of the permutation on the
-      state. [i_round_key] is the index of the first round constant to use for the
-      round. The context is modified. *)
-  val apply_one_round : ctxt -> int -> unit
-
-  (** Apply a permutation on the current state of the context *)
-  val apply_permutation : ctxt -> unit
-
-  (** [jive128_1 x y] calls the permutation Anemoi for [l = 1] with the state [S = (x, y)] and
-      apply Jive on the output *)
-  val jive128_1 : Bls12_381.Fr.t -> Bls12_381.Fr.t -> Bls12_381.Fr.t
-
   (** Set of parameters for BLS12-381, and parameters for specific
      instantiations given in the reference paper *)
   module Parameters : sig
+    (** The type representing the set of parameters for a given instance.
+        - [state_size] is the state size of the permutation, noted [m] in the paper
+        - [nb_rounds] is the number of rounds
+        - [linear_layer] is the MDS matrix used for the linear
+        - [round_constants] are the round constants
+    *)
+    type t =
+      { state_size : int;
+        nb_rounds : int;
+        linear_layer : Bls12_381.Fr.t array array;
+        round_constants : Bls12_381.Fr.t array
+      }
+
     (** Exponent for the substitution box. For BLS12-381, it is [5] *)
     val alpha : Bls12_381.Fr.t
 
@@ -177,38 +156,55 @@ module Anemoi : sig
     val gamma : Bls12_381.Fr.t
 
     (** Parameters for the permutation Anemoi for a state size of [m = 2] (i.e.
-        [l = 1]) and 128 bits of security
-        The parameters are:
-        - number of rounds
-        - l
-        - MDS matrix
-        - round constants
+        [l = 1]) and 128 bits of security given in the paper.
     *)
-    val state_size_1 :
-      int * int * Bls12_381.Fr.t array array * Bls12_381.Fr.t array
+    val security_128_state_size_2 : t
 
     (** Parameters for the permutation Anemoi for a state size of [m = 4] (i.e.
-        [l = 2]) and 128 bits of security.
-        The parameters are:
-        - number of rounds
-        - l
-        - MDS matrix
-        - round constants
+        [l = 2]) and 128 bits of security given in the paper.
     *)
-    val state_size_2 :
-      int * int * Bls12_381.Fr.t array array * Bls12_381.Fr.t array
+    val security_128_state_size_4 : t
 
     (** Parameters for the permutation Anemoi for a state size of [m = 6] (i.e.
-        [l = 3]) and 128 bits of security.
-        The parameters are:
-        - number of rounds
-        - l
-        - MDS matrix
-        - round constants
+        [l = 3]) and 128 bits of security given in the paper.
     *)
-    val state_size_3 :
-      int * int * Bls12_381.Fr.t array array * Bls12_381.Fr.t array
+    val security_128_state_size_6 : t
+
+    (** Parameters for the permutation Anemoi for a state size of [m = 8] (i.e.
+        [l = 4]) and 128 bits of security given in the paper.
+    *)
+    val security_128_state_size_8 : t
   end
+
+  (** A context contains the state and the instance parameters *)
+  type ctxt
+
+  (** [allocate_ctxt parameters]. Allocate a context for a specific instance of
+      Anemoi specific by [parameters].
+  *)
+  val allocate_ctxt : Parameters.t -> ctxt
+
+  (** Return the current state of the context *)
+  val get_state : ctxt -> Bls12_381.Fr.t array
+
+  (** Return the state size of the context *)
+  val get_state_size : ctxt -> int
+
+  (** [set_state ctxt state]. Set the context state to the given value. The
+      value [state] must be of the same size than the expecting state *)
+  val set_state : ctxt -> Bls12_381.Fr.t array -> unit
+
+  (** [apply_one_round ctxt i_round_key] applies only one round of the permutation on the
+      state. [i_round_key] is the index of the first round constant to use for the
+      round. The context is modified. *)
+  val apply_one_round : ctxt -> int -> unit
+
+  (** Apply a permutation on the current state of the context *)
+  val apply_permutation : ctxt -> unit
+
+  (** [jive128_1 x y] calls the permutation Anemoi for [l = 1] with the state [S = (x, y)] and
+      apply Jive on the output *)
+  val jive128_1 : Bls12_381.Fr.t -> Bls12_381.Fr.t -> Bls12_381.Fr.t
 end
 
 (** {{: https://eprint.iacr.org/2022/403.pdf } Griffin } over the scalar field

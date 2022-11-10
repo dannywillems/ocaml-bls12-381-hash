@@ -107,9 +107,6 @@ let test_vectors_anemoi128_2 () =
   List.iter
     (fun ( (x1_s, x2_s, y1_s, y2_s),
            (exp_res_x1_s, exp_res_x2_s, exp_res_y1_s, exp_res_y2_s) ) ->
-      let nb_rounds, l, mds, constants =
-        Bls12_381_hash.Anemoi.Parameters.state_size_2
-      in
       let x1 = Bls12_381.Fr.of_string x1_s in
       let x2 = Bls12_381.Fr.of_string x2_s in
       let y1 = Bls12_381.Fr.of_string y1_s in
@@ -120,7 +117,8 @@ let test_vectors_anemoi128_2 () =
       let exp_res_y2 = Bls12_381.Fr.of_string exp_res_y2_s in
       let state = [| x1; x2; y1; y2 |] in
       let ctxt =
-        Bls12_381_hash.Anemoi.allocate_ctxt ~mds ~constants l nb_rounds
+        Bls12_381_hash.Anemoi.allocate_ctxt
+          Bls12_381_hash.Anemoi.Parameters.security_128_state_size_4
       in
       let () = Bls12_381_hash.Anemoi.set_state ctxt state in
       let () = Bls12_381_hash.Anemoi.apply_permutation ctxt in
@@ -192,9 +190,6 @@ let test_vectors_anemoi128_3 () =
              exp_res_y1_s,
              exp_res_y2_s,
              exp_res_y3_s ) ) ->
-      let nb_rounds, l, mds, constants =
-        Bls12_381_hash.Anemoi.Parameters.state_size_3
-      in
       let x1 = Bls12_381.Fr.of_string x1_s in
       let x2 = Bls12_381.Fr.of_string x2_s in
       let x3 = Bls12_381.Fr.of_string x3_s in
@@ -209,7 +204,8 @@ let test_vectors_anemoi128_3 () =
       let exp_res_y3 = Bls12_381.Fr.of_string exp_res_y3_s in
       let state = [| x1; x2; x3; y1; y2; y3 |] in
       let ctxt =
-        Bls12_381_hash.Anemoi.allocate_ctxt ~mds ~constants l nb_rounds
+        Bls12_381_hash.Anemoi.allocate_ctxt
+          Bls12_381_hash.Anemoi.Parameters.security_128_state_size_6
       in
       let () = Bls12_381_hash.Anemoi.set_state ctxt state in
       let () = Bls12_381_hash.Anemoi.apply_permutation ctxt in
@@ -279,8 +275,6 @@ let test_vectors_anemoi128_4 () =
              exp_res_y2_s,
              exp_res_y3_s,
              exp_res_y4_s ) ) ->
-      let l = 4 in
-      let nb_rounds = 10 in
       let x1 = Bls12_381.Fr.of_string x1_s in
       let x2 = Bls12_381.Fr.of_string x2_s in
       let x3 = Bls12_381.Fr.of_string x3_s in
@@ -298,7 +292,10 @@ let test_vectors_anemoi128_4 () =
       let exp_res_y3 = Bls12_381.Fr.of_string exp_res_y3_s in
       let exp_res_y4 = Bls12_381.Fr.of_string exp_res_y4_s in
       let state = [| x1; x2; x3; x4; y1; y2; y3; y4 |] in
-      let ctxt = Bls12_381_hash.Anemoi.allocate_ctxt l nb_rounds in
+      let ctxt =
+        Bls12_381_hash.Anemoi.(
+          allocate_ctxt Parameters.security_128_state_size_8)
+      in
       let () = Bls12_381_hash.Anemoi.set_state ctxt state in
       let () = Bls12_381_hash.Anemoi.apply_permutation ctxt in
       let output = Bls12_381_hash.Anemoi.get_state ctxt in
@@ -372,7 +369,11 @@ let test_state_functions () =
   in
   let state_size = 2 * l in
   let state = Array.init state_size (fun _ -> Bls12_381.Fr.random ()) in
-  let ctxt = Bls12_381_hash.Anemoi.allocate_ctxt ~mds ~constants l nb_rounds in
+  let parameters =
+    Bls12_381_hash.Anemoi.Parameters.
+      { state_size; linear_layer = mds; nb_rounds; round_constants = constants }
+  in
+  let ctxt = Bls12_381_hash.Anemoi.allocate_ctxt parameters in
   let () = Bls12_381_hash.Anemoi.set_state ctxt state in
   let output = Bls12_381_hash.Anemoi.get_state ctxt in
   if not (Array.for_all2 Bls12_381.Fr.eq state output) then
@@ -386,11 +387,13 @@ let test_state_functions () =
          (List.map Bls12_381.Fr.to_string (Array.to_list output)))
 
 let test_anemoi_generic_with_l_one_is_anemoi_jive128_1 () =
-  let l = 1 in
-  let state_size = 2 * l in
-  let nb_rounds = 19 in
+  let state_size =
+    Bls12_381_hash.Anemoi.Parameters.security_128_state_size_2.state_size
+  in
   let state = Array.init state_size (fun _ -> Bls12_381.Fr.random ()) in
-  let ctxt = Bls12_381_hash.Anemoi.allocate_ctxt l nb_rounds in
+  let ctxt =
+    Bls12_381_hash.Anemoi.(allocate_ctxt Parameters.security_128_state_size_2)
+  in
   let () = Bls12_381_hash.Anemoi.set_state ctxt state in
   let () = Bls12_381_hash.Anemoi.apply_permutation ctxt in
   let output = Bls12_381_hash.Anemoi.get_state ctxt in
