@@ -124,7 +124,7 @@ module Anemoi : sig
     (** The type representing the set of parameters for a given instance.
         - [state_size] is the state size of the permutation, noted [m] in the paper
         - [nb_rounds] is the number of rounds
-        - [linear_layer] is the MDS matrix used for the linear
+        - [linear_layer] is the MDS matrix used for the linear layer
         - [round_constants] are the round constants
     *)
     type t =
