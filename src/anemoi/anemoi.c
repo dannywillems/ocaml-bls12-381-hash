@@ -592,7 +592,7 @@ void anemoi_1_apply(blst_fr *ctxt) {
 }
 
 void anemoi128_1_jive(blst_fr *res, blst_fr *x, blst_fr *y) {
-  blst_fr *ctxt = (blst_fr *)(malloc(sizeof(blst_fr) * 2));
+  blst_fr ctxt[2];
 
   memcpy(ctxt, x, sizeof(blst_fr));
   memcpy(ctxt + 1, y, sizeof(blst_fr));
@@ -605,8 +605,6 @@ void anemoi128_1_jive(blst_fr *res, blst_fr *x, blst_fr *y) {
   // The result is x + y + u + v
   blst_fr_add(res, res, ctxt);
   blst_fr_add(res, res, ctxt + 1);
-
-  free(ctxt);
 }
 
 void anemoi_generic_apply_flystel(anemoi_ctxt_t *ctxt) {
