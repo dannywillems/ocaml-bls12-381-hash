@@ -23,6 +23,8 @@ int main() {
 
   anemoi_jive128_1_compress(res, &x0, &y0);
 
+  free(res);
+
   return (0);
 }
 ```
