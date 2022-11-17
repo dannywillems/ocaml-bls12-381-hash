@@ -43,4 +43,6 @@ griffin_ctxt_t *griffin_allocate_context(int state_size, int nb_rounds,
                                          blst_fr *constants,
                                          blst_fr *alpha_beta_s);
 
+void griffin_free_context(griffin_ctxt_t *ctxt);
+
 #endif

@@ -588,3 +588,10 @@ griffin_ctxt_t *griffin_allocate_context(int state_size, int nb_rounds,
 
   return (ctxt);
 }
+
+void griffin_free_context(griffin_ctxt_t *ctxt) {
+  if (ctxt != NULL) {
+    free(ctxt->state);
+    free(ctxt);
+  }
+}
