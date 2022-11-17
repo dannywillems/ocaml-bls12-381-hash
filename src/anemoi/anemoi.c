@@ -747,3 +747,33 @@ void anemoi_apply_permutation(anemoi_ctxt_t *ctxt) {
     anemoi_generic_apply_linear_layer(ctxt);
   }
 }
+
+void anemoi_set_state_from_context(anemoi_ctxt_t *ctxt, blst_fr *state) {
+  int state_size = anemoi_get_state_size_from_context(ctxt);
+  blst_fr *ctxt_state = anemoi_get_state_from_context(ctxt);
+
+  for (int i = 0; i < state_size; i++) {
+    memcpy(ctxt_state + i, state + i, sizeof(blst_fr));
+  }
+}
+
+anemoi_ctxt_t *anemoi_allocate_context(int l, int nb_rounds) {
+  if (l > 4 || l < 0) {
+    return (NULL);
+  }
+
+  anemoi_ctxt_t *ctxt = malloc(sizeof(anemoi_ctxt_t));
+  if (ctxt == NULL) {
+    return (NULL);
+  }
+  blst_fr *state = malloc(sizeof(anemoi_ctxt_t));
+  if (state == NULL) {
+    free(ctxt);
+    return (NULL);
+  }
+
+  ctxt->l = l;
+  ctxt->nb_rounds = nb_rounds;
+
+  return (ctxt);
+}

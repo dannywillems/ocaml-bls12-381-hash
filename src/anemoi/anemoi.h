@@ -870,6 +870,10 @@ void anemoi_apply_one_round(anemoi_ctxt_t *ctxt, int idx);
 
 blst_fr *anemoi_get_state_from_context(anemoi_ctxt_t *ctxt);
 
+anemoi_ctxt_t *anemoi_allocate_context(int l, int nb_rounds);
+
+void anemoi_set_state_from_context(anemoi_ctxt_t *ctxt, blst_fr *state);
+
 int anemoi_get_state_size_from_context(anemoi_ctxt_t *ctxt);
 
 blst_fr *anemoi_get_mds_from_context(anemoi_ctxt_t *ctxt);
