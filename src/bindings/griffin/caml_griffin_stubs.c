@@ -35,24 +35,18 @@ CAMLprim value caml_bls12_381_hash_griffin_allocate_ctxt_stubs(
   // state_size + constants + nb alpha_beta_s
   int nb_alpha_beta_s = (state_size - 2) * 2;
   int nb_constants = nb_rounds * state_size;
-
   int state_full_size = state_size + nb_constants + nb_alpha_beta_s;
-  blst_fr *state = malloc(sizeof(blst_fr) * state_full_size);
-  if (state == NULL) {
-    caml_raise_out_of_memory();
-  }
-  griffin_ctxt_t *ctxt = malloc(sizeof(griffin_ctxt_t));
-  if (ctxt == NULL) {
-    free(state);
-    caml_raise_out_of_memory();
-  }
-  memset(state, 0, state_size * sizeof(blst_fr));
-  ctxt->state = state;
-  ctxt->state_size = state_size;
-  ctxt->nb_rounds = nb_rounds;
 
-  blst_fr *alpha_beta_s = state + state_size;
-  blst_fr *constants = state + state_size + nb_alpha_beta_s;
+  // must be allocated on the heap as we pass the values to functions later
+  blst_fr *alpha_beta_s = malloc(sizeof(blst_fr) * nb_alpha_beta_s);
+  if (alpha_beta_s == NULL) {
+    caml_raise_out_of_memory();
+  }
+  blst_fr *constants = malloc(sizeof(blst_fr) * nb_constants);
+  if (constants == NULL) {
+    free(alpha_beta_s);
+    caml_raise_out_of_memory();
+  }
 
   for (int i = 0; i < nb_alpha_beta_s; i++) {
     memcpy(alpha_beta_s + i, Fr_val_k(valpha_beta_s, i), sizeof(blst_fr));
@@ -60,6 +54,16 @@ CAMLprim value caml_bls12_381_hash_griffin_allocate_ctxt_stubs(
 
   for (int i = 0; i < nb_constants; i++) {
     memcpy(constants + i, Fr_val_k(vconstants, i), sizeof(blst_fr));
+  }
+
+  griffin_ctxt_t *ctxt =
+      griffin_allocate_context(state_size, nb_rounds, constants, alpha_beta_s);
+  // we don't need it anymore
+  free(alpha_beta_s);
+  free(constants);
+
+  if (ctxt == NULL) {
+    caml_raise_out_of_memory();
   }
 
   int out_of_heap_size = sizeof(griffin_ctxt_t *) +
