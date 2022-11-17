@@ -1,6 +1,6 @@
 (copy_files bindings/anemoi/caml_anemoi_stubs.c)
 
-(copy_files anemoi/{anemoi.h,anemoi.c})
+(copy_files anemoi/{anemoi.h,anemoi.c,anemoi_constants.h})
 
 (copy_files poseidon/{poseidon.h,poseidon.c})
 

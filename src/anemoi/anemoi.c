@@ -774,6 +774,14 @@ anemoi_ctxt_t *anemoi_allocate_context(int l, int nb_rounds) {
 
   ctxt->l = l;
   ctxt->nb_rounds = nb_rounds;
+  ctxt->ctxt = state;
 
   return (ctxt);
+}
+
+void anemoi_free_context(anemoi_ctxt_t *ctxt) {
+  if (ctxt != NULL) {
+    free(ctxt->ctxt);
+    free(ctxt);
+  }
 }
