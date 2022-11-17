@@ -22,8 +22,6 @@ int griffin_apply_one_round(griffin_ctxt_t *ctxt, int i_round_key);
 /** Return a pointer to the state in the context */
 blst_fr *griffin_get_state_from_context(griffin_ctxt_t *ctxt);
 
-void griffin_set_state_from_context(griffin_ctxt_t *ctxt, blst_fr *state);
-
 /** Set the state of the context to the given state */
 void griffin_set_state_from_context(griffin_ctxt_t *ctxt, blst_fr *state);
 
