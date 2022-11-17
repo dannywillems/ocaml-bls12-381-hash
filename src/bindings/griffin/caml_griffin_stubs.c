@@ -80,8 +80,9 @@ CAMLprim value caml_bls12_381_hash_griffin_set_state_stubs(value vctxt,
 
   griffin_ctxt_t *ctxt = Griffin_ctxt_val(vctxt);
   blst_fr *state = ctxt->state;
+  int state_size = griffin_get_state_size_from_context(ctxt);
 
-  for (int i = 0; i < ctxt->state_size; i++) {
+  for (int i = 0; i < state_size; i++) {
     memcpy(state + i, Fr_val_k(vstate, i), sizeof(blst_fr));
   }
 
@@ -110,7 +111,7 @@ CAMLprim value caml_bls12_381_hash_griffin_get_state_stubs(value vbuffer,
   CAMLparam2(vbuffer, vctxt);
   griffin_ctxt_t *ctxt = Griffin_ctxt_val(vctxt);
   blst_fr *state = griffin_get_state_from_context(ctxt);
-  int state_size = ctxt->state_size;
+  int state_size = griffin_get_state_size_from_context(ctxt);
   for (int i = 0; i < state_size; i++) {
     memcpy(Fr_val_k(vbuffer, i), state + i, sizeof(blst_fr));
   }
@@ -120,5 +121,6 @@ CAMLprim value caml_bls12_381_hash_griffin_get_state_stubs(value vbuffer,
 CAMLprim value caml_bls12_381_hash_griffin_get_state_size_stubs(value vctxt) {
   CAMLparam1(vctxt);
   griffin_ctxt_t *ctxt = Griffin_ctxt_val(vctxt);
-  CAMLreturn(Val_int(ctxt->state_size));
+  int state_size = griffin_get_state_size_from_context(ctxt);
+  CAMLreturn(Val_int(state_size));
 }

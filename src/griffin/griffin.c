@@ -1,11 +1,25 @@
 #include "griffin.h"
 
+int griffin_get_state_size_from_context(griffin_ctxt_t *ctxt) {
+  return (ctxt->state_size);
+}
+
 int griffin_get_number_of_alpha_betas_from_context(griffin_ctxt_t *ctxt) {
-  return ((ctxt->state_size - 2) * 2);
+  int state_size = griffin_get_state_size_from_context(ctxt);
+  return ((state_size - 2) * 2);
 }
 
 blst_fr *griffin_get_state_from_context(griffin_ctxt_t *ctxt) {
   return (ctxt->state);
+}
+
+void griffin_set_state_from_context(griffin_ctxt_t *ctxt, blst_fr *state) {
+  int state_size = griffin_get_state_size_from_context(ctxt);
+  blst_fr *ctxt_state = griffin_get_state_from_context(ctxt);
+
+  for (int i = 0; i < state_size; i++) {
+    memcpy(ctxt_state + i, state + i, sizeof(blst_fr));
+  }
 }
 
 blst_fr *griffin_get_alpha_beta_from_context(griffin_ctxt_t *ctxt) {
@@ -385,6 +399,7 @@ void griffin_addchain_alpha_inv(blst_fr *res, blst_fr *x) {
 void griffin_apply_non_linear_layer(griffin_ctxt_t *ctxt) {
   blst_fr *state = griffin_get_state_from_context(ctxt);
   blst_fr *alpha_beta_s = griffin_get_alpha_beta_from_context(ctxt);
+  int state_size = griffin_get_state_size_from_context(ctxt);
 
   blst_fr tmp;
   // y_0 = x_0^(1/d)
@@ -407,7 +422,7 @@ void griffin_apply_non_linear_layer(griffin_ctxt_t *ctxt) {
 
   // Will be x_(i - 1) and also will contain alpha_i * acc_l_i
   memset(&tmp, 0, sizeof(blst_fr));
-  for (int i = 0; i < ctxt->state_size - 2; i++) {
+  for (int i = 0; i < state_size - 2; i++) {
     // compute (i - 1) y_0 + y_i. The accumulator contains already y_1 + (i - 2)
     // * y_0
     blst_fr_add(&acc_l_i, &acc_l_i, state);
@@ -492,8 +507,9 @@ void griffin_apply_linear_layer(griffin_ctxt_t *ctxt) {}
 int griffin_add_constant(griffin_ctxt_t *ctxt, int i_round_key) {
   blst_fr *state = griffin_get_state_from_context(ctxt);
   blst_fr *constants = griffin_get_round_constants_from_context(ctxt);
+  int state_size = griffin_get_state_size_from_context(ctxt);
 
-  for (int i = 0; i < ctxt->state_size; i++) {
+  for (int i = 0; i < state_size; i++) {
     blst_fr_add(state + i, state + i, constants + i_round_key++);
   }
   return (i_round_key);
@@ -529,4 +545,46 @@ void griffin_apply_permutation(griffin_ctxt_t *ctxt) {
   for (int i = 0; i < ctxt->nb_rounds; i++) {
     i_round_key = griffin_apply_one_round(ctxt, i_round_key);
   }
+}
+
+griffin_ctxt_t *griffin_allocate_context(int state_size, int nb_rounds,
+                                         blst_fr *constants,
+                                         blst_fr *alpha_beta_s) {
+  // Check state size
+  if (state_size != 3 && state_size % 4 != 0) {
+    return (NULL);
+  }
+
+  griffin_ctxt_t *ctxt = malloc(sizeof(griffin_ctxt_t));
+  if (ctxt == NULL) {
+    return (NULL);
+  }
+  ctxt->state_size = state_size;
+  ctxt->nb_rounds = nb_rounds;
+
+  int nb_alpha_beta_s = (state_size - 2) * 2;
+  int nb_constants = nb_rounds * state_size;
+
+  int state_full_size = state_size + nb_constants + nb_alpha_beta_s;
+
+  blst_fr *ctxt_state = malloc(sizeof(blst_fr) * state_full_size);
+  if (ctxt_state == NULL) {
+    free(ctxt);
+    return (NULL);
+  }
+  ctxt->state = ctxt_state;
+  blst_fr *ctxt_alpha_beta_s = ctxt_state + state_size;
+  blst_fr *ctxt_constants = ctxt_alpha_beta_s + nb_alpha_beta_s;
+
+  memset(ctxt_state, 0, state_size * sizeof(blst_fr));
+
+  for (int i = 0; i < nb_alpha_beta_s; i++) {
+    memcpy(ctxt_alpha_beta_s + i, alpha_beta_s + i, sizeof(blst_fr));
+  }
+
+  for (int i = 0; i < nb_constants; i++) {
+    memcpy(ctxt_constants + i, constants + i, sizeof(blst_fr));
+  }
+
+  return (ctxt);
 }
