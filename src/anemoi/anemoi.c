@@ -19,7 +19,24 @@ blst_fr *anemoi_get_mds_from_context(anemoi_ctxt_t *ctxt) {
 
 blst_fr *anemoi_get_round_constants_from_context(anemoi_ctxt_t *ctxt) {
   // shift by state size and MDS
-  return (ctxt->ctxt + 2 * ctxt->l + ctxt->l * ctxt->l);
+  int state_size = anemoi_get_state_size_from_context(ctxt);
+  return (ctxt->ctxt + state_size + ctxt->l * ctxt->l);
+}
+
+int anemoi_get_number_of_constants(anemoi_ctxt_t *ctxt) {
+  return (ctxt->l * ctxt->nb_rounds * 2);
+}
+
+blst_fr *anemoi_get_beta_from_context(anemoi_ctxt_t *ctxt) {
+  int nb_constants = anemoi_get_number_of_constants(ctxt);
+  int state_size = anemoi_get_state_size_from_context(ctxt);
+  return (ctxt->ctxt + state_size + ctxt->l * ctxt->l + nb_constants);
+}
+
+blst_fr *anemoi_get_delta_from_context(anemoi_ctxt_t *ctxt) {
+  int nb_constants = anemoi_get_number_of_constants(ctxt);
+  int state_size = anemoi_get_state_size_from_context(ctxt);
+  return (ctxt->ctxt + state_size + ctxt->l * ctxt->l + nb_constants + 1);
 }
 
 void anemoi_fr_multiply_by_g(blst_fr *res, blst_fr *v) {
@@ -61,6 +78,21 @@ void anemoi_fr_multiply_by_g_square_plus_g(blst_fr *res, blst_fr *v) {
   anemoi_fr_multiply_by_g_plus_one(res, &tmp);
 }
 
+void anemoi_generic_add_constant(anemoi_ctxt_t *ctxt, int i_rc) {
+  // NB: 4 is the jump to perform as the constants are for up to l = 4. If we
+  // generate for more instances, this value must be changed.
+  blst_fr *state = anemoi_get_state_from_context(ctxt);
+  blst_fr *state_x = state;
+  blst_fr *state_y = state + ctxt->l;
+  blst_fr *constants = anemoi_get_round_constants_from_context(ctxt);
+  blst_fr *constants_x = constants;
+  blst_fr *constants_y = constants + ctxt->nb_rounds * ctxt->l;
+  for (int i = 0; i < ctxt->l; i++) {
+    blst_fr_add(state_x + i, state_x + i, constants_x + i_rc);
+    blst_fr_add(state_y + i, state_y + i, constants_y + i_rc++);
+  }
+}
+
 void anemoi_apply_shift_state(anemoi_ctxt_t *ctxt) {
   blst_fr *state = anemoi_get_state_from_context(ctxt);
   blst_fr *state_y = state + ctxt->l;
@@ -76,29 +108,52 @@ void anemoi_apply_shift_state(anemoi_ctxt_t *ctxt) {
   memcpy(state_y + ctxt->l - 1, &tmp, sizeof(blst_fr));
 }
 
-void anemoi_1_apply_linear_layer(blst_fr *ctxt) {
+void anemoi_1_apply_linear_layer(anemoi_ctxt_t *ctxt) {
   blst_fr tmp;
+  blst_fr *state = anemoi_get_state_from_context(ctxt);
 
   // Compute "g * y' and save it in tmp.
-  anemoi_fr_multiply_by_g(&tmp, ctxt + 1);
+  anemoi_fr_multiply_by_g(&tmp, state + 1);
   // x += g * y. Inplace operation
-  blst_fr_add(ctxt, ctxt, &tmp);
+  blst_fr_add(state, state, &tmp);
 
   // Compute "g * x' and save it in tmp.
-  anemoi_fr_multiply_by_g(&tmp, ctxt);
+  anemoi_fr_multiply_by_g(&tmp, state);
 
-  blst_fr_add(ctxt + 1, ctxt + 1, &tmp);
+  blst_fr_add(state + 1, state + 1, &tmp);
 }
 
-void anemoi_2_apply_linear_layer(blst_fr *ctxt) {
+void anemoi_2_apply_linear_layer(anemoi_ctxt_t *ctxt) {
+  blst_fr *state_x = anemoi_get_state_from_context(ctxt);
+  blst_fr *state_y = state_x + ctxt->l;
   blst_fr tmp;
 
-  anemoi_1_apply_linear_layer(ctxt);
+  // Apply M_x
+  // Compute "g * y' and save it in tmp.
+  anemoi_fr_multiply_by_g(&tmp, state_x + 1);
+  // x += g * y. Inplace operation
+  blst_fr_add(state_x, state_x, &tmp);
+
+  // Compute "g * x' and save it in tmp.
+  anemoi_fr_multiply_by_g(&tmp, state_x);
+
+  blst_fr_add(state_x + 1, state_x + 1, &tmp);
+
   // swap y_1 et y_0 for linear layer
-  memcpy(&tmp, ctxt + 2, sizeof(blst_fr));
-  memcpy(ctxt + 2, ctxt + 2 + 1, sizeof(blst_fr));
-  memcpy(ctxt + 2 + 1, &tmp, sizeof(blst_fr));
-  anemoi_1_apply_linear_layer(ctxt + 2);
+  memcpy(&tmp, state_y, sizeof(blst_fr));
+  memcpy(state_y, state_y + 1, sizeof(blst_fr));
+  memcpy(state_y + 1, &tmp, sizeof(blst_fr));
+
+  // Apply M_y
+  // Compute "g * y' and save it in tmp.
+  anemoi_fr_multiply_by_g(&tmp, state_y + 1);
+  // x += g * y. Inplace operation
+  blst_fr_add(state_y, state_y, &tmp);
+
+  // Compute "g * x' and save it in tmp.
+  anemoi_fr_multiply_by_g(&tmp, state_y);
+
+  blst_fr_add(state_y + 1, state_y + 1, &tmp);
 }
 
 // l = 3
@@ -530,13 +585,13 @@ void anemoi_addchain_alpha_inv(blst_fr *res, blst_fr *x) {
   blst_fr_mul(res, tmp + 6, tmp + 35);
 }
 
-void anemoi_apply_s_box(blst_fr *x, blst_fr *y) {
+void anemoi_apply_s_box(blst_fr *x, blst_fr *y, blst_fr *beta, blst_fr *delta) {
   blst_fr tmp;
   // First we compute x_i = x_i - beta * y^2 = x_i - Q_i(y_i)
   // -- compute y^2
   blst_fr_sqr(&tmp, y);
   // -- Compute beta * y^2
-  blst_fr_mul(&tmp, &tmp, &BETA);
+  blst_fr_mul(&tmp, &tmp, beta);
   // -- Compute x = x - beta * y^2
   blst_fr_sub(x, x, &tmp);
   // Computing E(x)
@@ -555,32 +610,27 @@ void anemoi_apply_s_box(blst_fr *x, blst_fr *y) {
   // -- compute y^2
   blst_fr_sqr(&tmp, y);
   // -- compute beta * y^2
-  blst_fr_mul(&tmp, &tmp, &BETA);
+  blst_fr_mul(&tmp, &tmp, beta);
   // -- compute beta * y^2 + delta
-  blst_fr_add(&tmp, &tmp, &DELTA);
+  blst_fr_add(&tmp, &tmp, delta);
   // -- compute x + x + beta * y^2 + delta
   blst_fr_add(x, x, &tmp);
 }
 
-void anemoi_1_apply_flystel(blst_fr *ctxt) {
-  anemoi_apply_s_box(ctxt, ctxt + 1);
+void anemoi_1_apply_flystel(anemoi_ctxt_t *ctxt) {
+  blst_fr *beta = anemoi_get_beta_from_context(ctxt);
+  blst_fr *delta = anemoi_get_delta_from_context(ctxt);
+  blst_fr *state = anemoi_get_state_from_context(ctxt);
+  anemoi_apply_s_box(state, state + 1, beta, delta);
 }
 
-int anemoi_1_add_constant(blst_fr *ctxt, int index_cst) {
-  blst_fr_add(ctxt, ctxt,
-              ANEMOI_ROUND_CONSTANTS_128BITS_INPUT_SIZE_1 + index_cst++);
-  blst_fr_add(ctxt + 1, ctxt + 1,
-              ANEMOI_ROUND_CONSTANTS_128BITS_INPUT_SIZE_1 + index_cst++);
-  return (index_cst);
-}
-
-void anemoi_1_apply(blst_fr *ctxt) {
+void anemoi_1_apply(anemoi_ctxt_t *ctxt) {
   int index_cst;
 
   index_cst = 0;
-  for (int i = 0; i < 19; i++) {
+  for (int i = 0; i < ctxt->nb_rounds; i++) {
     // add cst
-    index_cst = anemoi_1_add_constant(ctxt, index_cst);
+    anemoi_generic_add_constant(ctxt, i);
     // apply linear layer
     anemoi_1_apply_linear_layer(ctxt);
     // apply sbox
@@ -591,56 +641,12 @@ void anemoi_1_apply(blst_fr *ctxt) {
   anemoi_1_apply_linear_layer(ctxt);
 }
 
-void anemoi128_1_jive(blst_fr *res, blst_fr *x, blst_fr *y) {
-  blst_fr ctxt[2];
-
-  memcpy(ctxt, x, sizeof(blst_fr));
-  memcpy(ctxt + 1, y, sizeof(blst_fr));
-
-  anemoi_1_apply(ctxt);
-
-  // Page 17 and page 7, figure 2-a
-  // The result is x + y + P(x, y). We keep first the initial value.
-  blst_fr_add(res, x, y);
-  // The result is x + y + u + v
-  blst_fr_add(res, res, ctxt);
-  blst_fr_add(res, res, ctxt + 1);
-}
-
 void anemoi_generic_apply_flystel(anemoi_ctxt_t *ctxt) {
   blst_fr *state = anemoi_get_state_from_context(ctxt);
+  blst_fr *beta = anemoi_get_beta_from_context(ctxt);
+  blst_fr *delta = anemoi_get_delta_from_context(ctxt);
   for (int i = 0; i < ctxt->l; i++) {
-    anemoi_apply_s_box(state + i, state + ctxt->l + i);
-  }
-}
-
-void anemoi_smaller_than_4_add_constant(anemoi_ctxt_t *ctxt, int idx) {
-  // NB: 4 is the jump to perform as the constants are for up to l = 4. If we
-  // generate for more instances, this value must be changed.
-  blst_fr *state = anemoi_get_state_from_context(ctxt);
-
-  int i_round = idx / (2 * ctxt->l);
-
-  for (int i = 0; i < ctxt->l; i++) {
-    blst_fr_add(state + i, state + i,
-                ANEMOI_ROUND_CONSTANTS_C + i_round * 4 + i);
-    blst_fr_add(state + ctxt->l + i, state + ctxt->l + i,
-                ANEMOI_ROUND_CONSTANTS_D + i_round * 4 + i);
-  }
-}
-
-void anemoi_generic_add_constant(anemoi_ctxt_t *ctxt, int i_rc) {
-  // NB: 4 is the jump to perform as the constants are for up to l = 4. If we
-  // generate for more instances, this value must be changed.
-  blst_fr *state = anemoi_get_state_from_context(ctxt);
-  blst_fr *state_x = state;
-  blst_fr *state_y = state + ctxt->l;
-  blst_fr *constants = anemoi_get_round_constants_from_context(ctxt);
-  blst_fr *constants_x = constants;
-  blst_fr *constants_y = constants + ctxt->nb_rounds * ctxt->l;
-  for (int i = 0; i < ctxt->l; i++) {
-    blst_fr_add(state_x + i, state_x + i, constants_x + i_rc);
-    blst_fr_add(state_y + i, state_y + i, constants_y + i_rc++);
+    anemoi_apply_s_box(state + i, state + ctxt->l + i, beta, delta);
   }
 }
 
@@ -696,21 +702,21 @@ void anemoi_apply_one_round(anemoi_ctxt_t *ctxt, int idx) {
   blst_fr *state = anemoi_get_state_from_context(ctxt);
 
   if (ctxt->l == 1) {
-    anemoi_1_add_constant(state, idx);
-    anemoi_1_apply_linear_layer(state);
-    anemoi_1_apply_flystel(state);
+    anemoi_generic_add_constant(ctxt, idx);
+    anemoi_1_apply_linear_layer(ctxt);
+    anemoi_1_apply_flystel(ctxt);
   }
 
   else if (ctxt->l == 2) {
-    anemoi_smaller_than_4_add_constant(ctxt, idx);
-    anemoi_2_apply_linear_layer(state);
+    anemoi_generic_add_constant(ctxt, idx);
+    anemoi_2_apply_linear_layer(ctxt);
     anemoi_generic_apply_flystel(ctxt);
   } else if (ctxt->l == 3) {
-    anemoi_smaller_than_4_add_constant(ctxt, idx);
+    anemoi_generic_add_constant(ctxt, idx);
     anemoi_3_apply_linear_layer(ctxt);
     anemoi_generic_apply_flystel(ctxt);
   } else if (ctxt->l == 4) {
-    anemoi_smaller_than_4_add_constant(ctxt, idx);
+    anemoi_generic_add_constant(ctxt, idx);
     anemoi_4_apply_linear_layer(ctxt);
     anemoi_generic_apply_flystel(ctxt);
   } else {
@@ -721,18 +727,16 @@ void anemoi_apply_one_round(anemoi_ctxt_t *ctxt, int idx) {
 }
 
 void anemoi_apply_permutation(anemoi_ctxt_t *ctxt) {
-  blst_fr *state = anemoi_get_state_from_context(ctxt);
-
   for (int i = 0; i < ctxt->nb_rounds; i++) {
-    anemoi_apply_one_round(ctxt, 2 * i * ctxt->l);
+    anemoi_apply_one_round(ctxt, i * ctxt->l);
   }
 
   if (ctxt->l == 1) {
-    anemoi_1_apply_linear_layer(state);
+    anemoi_1_apply_linear_layer(ctxt);
   }
 
   else if (ctxt->l == 2) {
-    anemoi_2_apply_linear_layer(state);
+    anemoi_2_apply_linear_layer(ctxt);
   }
 
   else if (ctxt->l == 3) {
@@ -758,6 +762,8 @@ void anemoi_set_state_from_context(anemoi_ctxt_t *ctxt, blst_fr *state) {
 }
 
 anemoi_ctxt_t *anemoi_allocate_context(int l, int nb_rounds) {
+  // Returning null because we do not support bigger state size than 8 at the
+  // moment
   if (l > 4 || l < 0) {
     return (NULL);
   }

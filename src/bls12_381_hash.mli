@@ -124,7 +124,7 @@ module Anemoi : sig
     (** The type representing the set of parameters for a given instance *)
     type t
 
-    (** [create security state_size nb_rounds round_constants linear_layer] creates a
+    (** [create security state_size nb_rounds linear_layer] creates a
         value of type {!t}. If the [state_size] is [2], [4], [6] or [8] and
         [security = 128], an exception is raised. The library enforces the user
         to use the default security parameters and an optimised implementation
@@ -135,13 +135,7 @@ module Anemoi : sig
         support for other instances than the default parameters provided by the
         library.
     *)
-    val create :
-      int ->
-      int ->
-      int ->
-      Bls12_381.Fr.t array ->
-      Bls12_381.Fr.t array array ->
-      t
+    val create : int -> int -> int -> Bls12_381.Fr.t array array -> t
       [@@deprecated
         "It is highly recommended to follow the recommandation in the paper \
          for the choice of security parameters. Please open an issue if you \
@@ -168,6 +162,11 @@ module Anemoi : sig
 
     (** Set to [0] for BLS12-381 *)
     val gamma : Bls12_381.Fr.t
+
+    (** [generate_constants nb_rounds l] generates the constants for the
+        instance of Anemoi for a state size of [m = 2 * l]. The output contains
+        the C's followed by the D's as described in the paper in section 5.1 *)
+    val generate_constants : int -> int -> Bls12_381.Fr.t array
 
     (** Parameters for the permutation Anemoi for a state size of [m = 2] (i.e.
         [l = 1]) and 128 bits of security given in the paper.

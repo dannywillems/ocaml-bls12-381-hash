@@ -1,8 +1,6 @@
 #ifndef ANEMOI_H
 #define ANEMOI_H
 
-#include "anemoi_constants.h"
-
 #include "blst.h"
 #include "blst_misc.h"
 #include <string.h>
@@ -11,11 +9,9 @@ typedef struct anemoi_ctxt_s {
   // state_size := m = 2 * l
   int l;
   int nb_rounds;
-  // State + MDS + constants
+  // State + MDS + constants + beta + delta
   blst_fr *ctxt;
 } anemoi_ctxt_t;
-
-void anemoi128_1_jive(blst_fr *res, blst_fr *x, blst_fr *y);
 
 void anemoi_apply_permutation(anemoi_ctxt_t *ctxt);
 
