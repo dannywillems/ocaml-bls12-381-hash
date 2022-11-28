@@ -86,23 +86,29 @@ module Parameters = struct
     done ;
     Array.concat [csts_c; csts_d]
 
-  let create security state_size nb_rounds linear_layer =
+  let compute_number_of_rounds state_size security =
+    let l = state_size / 2 in
+    let security_margin = 1 + l in
+    let alpha = 5 in
+    let pow_security_2 = Z.pow (Z.of_int 2) security in
+    let rec aux r =
+      let num = (2 * l * r) + alpha + 1 + (2 * ((l * r) - 2)) in
+      let den = 2 * l * r in
+      let bin = Z.bin (Z.of_int num) den in
+      let bin_square = Z.mul bin bin in
+      if Z.gt bin_square pow_security_2 then r else aux (r + 1)
+    in
+    max 10 (security_margin + aux 0)
+
+  let create security state_size linear_layer =
     if state_size mod 2 = 1 then failwith "State size must be a multiple of 2" ;
     if state_size = 2 || state_size = 4 || state_size = 6 || state_size = 8 then
-      if security = 128 then
-        failwith
-          (Printf.sprintf
-             "The library enforces the user to use default security parameters \
-              when a security of 128bits is required. Please use the \
-              parameters security_128_state_size_%d"
-             state_size)
-      else
-        failwith
-          "For the given state size, the library only supports 128bits of \
-           security. Please open an issue"
-    else
-      let round_constants = generate_constants nb_rounds (state_size / 2) in
-      { security; state_size; nb_rounds; round_constants; linear_layer }
+      failwith
+        "Use the value given above. The library enforces users to use the \
+         linear layer recommended in the paper" ;
+    let nb_rounds = compute_number_of_rounds state_size security in
+    let round_constants = generate_constants nb_rounds (state_size / 2) in
+    { security; state_size; nb_rounds; round_constants; linear_layer }
 
   let security_128_state_size_2 =
     { security = 128;

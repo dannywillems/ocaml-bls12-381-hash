@@ -363,12 +363,9 @@ let test_state_functions () =
   let mds =
     Array.init l (fun _ -> Array.init l (fun _ -> Bls12_381.Fr.random ()))
   in
-  let nb_rounds = 2 + Random.int 100 in
   let state_size = 2 * l in
   let state = Array.init state_size (fun _ -> Bls12_381.Fr.random ()) in
-  let parameters =
-    Bls12_381_hash.Anemoi.Parameters.create 128 state_size nb_rounds mds
-  in
+  let parameters = Bls12_381_hash.Anemoi.Parameters.create 128 state_size mds in
   let ctxt = Bls12_381_hash.Anemoi.allocate_ctxt parameters in
   let () = Bls12_381_hash.Anemoi.set_state ctxt state in
   let output = Bls12_381_hash.Anemoi.get_state ctxt in
@@ -395,6 +392,16 @@ let test_anemoi_generic_with_l_one_is_anemoi_jive128_1 () =
     Bls12_381.Fr.eq
       (Bls12_381_hash.Anemoi.jive128_1 state.(0) state.(1))
       Bls12_381.Fr.(state.(0) + state.(1) + output.(0) + output.(1)))
+
+let test_compute_number_of_rounds () =
+  assert (Bls12_381_hash.Anemoi.Parameters.compute_number_of_rounds 2 128 = 19) ;
+  assert (Bls12_381_hash.Anemoi.Parameters.compute_number_of_rounds 4 128 = 12) ;
+  assert (Bls12_381_hash.Anemoi.Parameters.compute_number_of_rounds 6 128 = 10) ;
+  assert (Bls12_381_hash.Anemoi.Parameters.compute_number_of_rounds 8 128 = 10) ;
+  assert (Bls12_381_hash.Anemoi.Parameters.compute_number_of_rounds 2 256 = 35) ;
+  assert (Bls12_381_hash.Anemoi.Parameters.compute_number_of_rounds 4 256 = 20) ;
+  assert (Bls12_381_hash.Anemoi.Parameters.compute_number_of_rounds 6 256 = 15) ;
+  assert (Bls12_381_hash.Anemoi.Parameters.compute_number_of_rounds 8 256 = 14)
 
 let test_anemoi_generate_constants () =
   let l = 1 in
@@ -512,5 +519,8 @@ let () =
             "State initialisation and get state"
             `Quick
             test_state_functions;
-          test_case "Constant generation" `Quick test_anemoi_generate_constants
-        ] ) ]
+          test_case "Constant generation" `Quick test_anemoi_generate_constants;
+          test_case
+            "Compute number of rounds"
+            `Quick
+            test_compute_number_of_rounds ] ) ]

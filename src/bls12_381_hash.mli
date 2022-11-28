@@ -124,23 +124,24 @@ module Anemoi : sig
     (** The type representing the set of parameters for a given instance *)
     type t
 
-    (** [create security state_size nb_rounds linear_layer] creates a
-        value of type {!t}. If the [state_size] is [2], [4], [6] or [8] and
-        [security = 128], an exception is raised. The library enforces the user
-        to use the default security parameters and an optimised implementation
-        is provided in these cases.
+    (** [create security state_size linear_layer] creates a
+        value of type {!t}. If the [state_size] is [2], [4], [6] or [8], an
+        exception is raised. The library enforces the user to use the default
+        security parameters and an optimised implementation is provided in these
+        cases. Also, an exception is raised if the state size is not a multiple
+        of [2].
 
-        @deprecated It is highly recommended to follow the recommandation in the paper for
-        the choice of security parameters. Please open an issue if you need
-        support for other instances than the default parameters provided by the
-        library.
+        @deprecated It is highly recommended to follow the recommandation in the
+        paper for the choice of security parameters. Please open an issue if you
+        need support for other instances than the default parameters provided by
+        the library.
     *)
-    val create : int -> int -> int -> Bls12_381.Fr.t array array -> t
+    val create : int -> int -> Bls12_381.Fr.t array array -> t
       [@@deprecated
         "It is highly recommended to follow the recommandation in the paper \
          for the choice of security parameters. Please open an issue if you \
          need support for other instances than the default parameters provided \
-         by the library. "]
+         by the library."]
 
     (** Exponent for the substitution box. For BLS12-381, it is [5] *)
     val alpha : Bls12_381.Fr.t
@@ -162,6 +163,12 @@ module Anemoi : sig
 
     (** Set to [0] for BLS12-381 *)
     val gamma : Bls12_381.Fr.t
+
+    (** [compute_number_of_rounds state_size security] computes the minimal
+        number of rounds for an instance of Anemoi with a state size of [m =
+        state_size] to reach a security level of [security] bits. The
+        computation follows the formula given in section 5.2 *)
+    val compute_number_of_rounds : int -> int -> int
 
     (** [generate_constants nb_rounds l] generates the constants for the
         instance of Anemoi for a state size of [m = 2 * l]. The output contains

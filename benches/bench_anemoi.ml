@@ -8,17 +8,8 @@ let t1 =
 
 let t2 l =
   let state_size = l * 2 in
-  let nb_rounds = if l = 1 then 19 else if l = 2 then 12 else 10 in
-  let mds, constants =
-    if l > 4 then
-      let mds =
-        Array.init l (fun _ -> Array.init l (fun _ -> Bls12_381.Fr.random ()))
-      in
-      let constants =
-        Array.init (2 * l * nb_rounds) (fun _ -> Bls12_381.Fr.random ())
-      in
-      (Some mds, Some constants)
-    else (None, None)
+  let mds =
+    Array.init l (fun _ -> Array.init l (fun _ -> Bls12_381.Fr.random ()))
   in
   let state = Array.init state_size (fun _ -> Bls12_381.Fr.random ()) in
   let name = Printf.sprintf "Benchmark AnemoiJive%d" l in
@@ -31,13 +22,7 @@ let t2 l =
       Bls12_381_hash.Anemoi.Parameters.security_128_state_size_6
     else if state_size = 8 then
       Bls12_381_hash.Anemoi.Parameters.security_128_state_size_8
-    else
-      Bls12_381_hash.Anemoi.Parameters.create
-        128
-        state_size
-        nb_rounds
-        (Option.get constants)
-        (Option.get mds)
+    else Bls12_381_hash.Anemoi.Parameters.create 128 state_size mds
   in
   let ctxt = Bls12_381_hash.Anemoi.allocate_ctxt parameters in
   let () = Bls12_381_hash.Anemoi.set_state ctxt state in
