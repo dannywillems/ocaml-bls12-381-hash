@@ -29,6 +29,10 @@ blst_fr *anemoi_get_mds_from_context(anemoi_ctxt_t *ctxt);
 
 blst_fr *anemoi_get_round_constants_from_context(anemoi_ctxt_t *ctxt);
 
+blst_fr *anemoi_get_beta_from_context(anemoi_ctxt_t *ctxt);
+
+blst_fr *anemoi_get_delta_from_context(anemoi_ctxt_t *ctxt);
+
 void anemoi_free_context(anemoi_ctxt_t *ctxt);
 
 #endif
