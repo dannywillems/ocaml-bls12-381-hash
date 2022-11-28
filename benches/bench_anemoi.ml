@@ -12,7 +12,9 @@ let t2 l =
     Array.init l (fun _ -> Array.init l (fun _ -> Bls12_381.Fr.random ()))
   in
   let state = Array.init state_size (fun _ -> Bls12_381.Fr.random ()) in
-  let name = Printf.sprintf "Benchmark AnemoiJive%d" l in
+  let name =
+    Printf.sprintf "Benchmark Anemoi [m = %d, security = 128]" state_size
+  in
   let parameters =
     if state_size = 2 then
       Bls12_381_hash.Anemoi.Parameters.security_128_state_size_2
@@ -29,6 +31,6 @@ let t2 l =
   Bench.Test.create ~name (fun () ->
       Bls12_381_hash.Anemoi.apply_permutation ctxt)
 
-let command = Bench.make_command [t1; t2 2; t2 3; t2 4; t2 5; t2 6; t2 10]
+let command = Bench.make_command [t1; t2 1; t2 2; t2 3; t2 4; t2 5; t2 6; t2 10]
 
 let () = Core.Command.run command
