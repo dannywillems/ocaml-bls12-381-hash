@@ -26,70 +26,16 @@ module Stubs = struct
     = "caml_bls12_381_hash_poseidon_apply_permutation_stubs"
 end
 
-type ctxt = Stubs.ctxt
-
-let allocate_ctxt state_size nb_full_rounds nb_partial_rounds batch_size ark mds
-    =
-  let modified_ark =
-    let ( arc_full_round_start_with_first_partial,
-          arc_intermediate_state,
-          arc_unbatched,
-          arc_full_round_end ) =
-      compute_updated_constants
-        nb_partial_rounds
-        nb_full_rounds
-        state_size
-        batch_size
-        ark
-        mds
-    in
-    Array.concat
-      [ arc_full_round_start_with_first_partial;
-        arc_intermediate_state;
-        arc_unbatched;
-        arc_full_round_end;
-        (* Adding dummy constants, zeroes, for the last round as we apply the
-           round key at the end of a full round. *)
-        Array.init state_size (fun _ -> Bls12_381.Fr.(copy zero)) ]
-  in
-  let mds_nb_rows = Array.length mds in
-  let mds_nb_cols = Array.length mds.(0) in
-  if mds_nb_cols <> mds_nb_rows then
-    failwith "The parameter MDS must be a square matrix" ;
-  let ctxt =
-    Stubs.allocate_ctxt
-      ~state_size
-      ~nb_full_rounds
-      ~nb_partial_rounds
-      ~batch_size
-      ~ark:modified_ark
-      ~mds
-  in
-  ctxt
-
-let get_state_size ctxt = Stubs.get_state_size ctxt
-
-let set_state ctxt state =
-  let exp_state_size = Stubs.get_state_size ctxt in
-  let state_size = Array.length state in
-  if state_size <> exp_state_size then
-    failwith
-      (Printf.sprintf
-         "The given array contains %d elements but the expected state size is \
-          %d"
-         state_size
-         exp_state_size) ;
-  Stubs.set_state ctxt state
-
-let get_state ctxt =
-  let state_size = Stubs.get_state_size ctxt in
-  let state = Array.init state_size (fun _ -> Bls12_381.Fr.(copy zero)) in
-  Stubs.get_state state ctxt ;
-  state
-
-let apply_permutation ctxt = Stubs.apply_permutation ctxt
-
 module Parameters = struct
+  type t =
+    { state_size : int;
+      nb_of_partial_rounds : int;
+      nb_of_full_rounds : int;
+      batch_size : int;
+      round_constants : Bls12_381.Fr.t array;
+      linear_layer : Bls12_381.Fr.t array array
+    }
+
   (* Generated with the command below from ocaml-ec commit
      cd13dd0e984a4eeadd82e0ac4ce792c275bd3b18 [dune exec ./generate_ark.exe 8 56 3
      52435875175126190479447740508185965837690552500527637822603658699938581184513
@@ -311,7 +257,14 @@ module Parameters = struct
     |]
     |> Array.map (Array.map Bls12_381.Fr.of_string)
 
-  let state_size_128_3 = (3, 8, 56, 3, state_size_3_ark, state_size_3_mds)
+  let security_128_state_size_3 =
+    { state_size = 3;
+      nb_of_full_rounds = 8;
+      nb_of_partial_rounds = 56;
+      batch_size = 3;
+      round_constants = state_size_3_ark;
+      linear_layer = state_size_3_mds
+    }
 
   let state_size_256_5_ark =
     (* Come from https://github.com/dusk-network/Hades252/tree/7a7a255f6cc48f892de5cf8935b5264eb8893852/assets *)
@@ -1313,6 +1266,75 @@ module Parameters = struct
     |]
     |> Array.map (Array.map Bls12_381.Fr.of_string)
 
-  let state_size_256_5 =
-    (5, 8, 59, 1, state_size_256_5_ark, state_size_256_5_mds)
+  let security_256_state_size_5 =
+    { state_size = 5;
+      nb_of_full_rounds = 8;
+      nb_of_partial_rounds = 59;
+      batch_size = 1;
+      round_constants = state_size_256_5_ark;
+      linear_layer = state_size_256_5_mds
+    }
 end
+
+type ctxt = Stubs.ctxt
+
+let allocate_ctxt parameters =
+  let open Parameters in
+  let modified_ark =
+    let ( arc_full_round_start_with_first_partial,
+          arc_intermediate_state,
+          arc_unbatched,
+          arc_full_round_end ) =
+      compute_updated_constants
+        parameters.nb_of_partial_rounds
+        parameters.nb_of_full_rounds
+        parameters.state_size
+        parameters.batch_size
+        parameters.round_constants
+        parameters.linear_layer
+    in
+    Array.concat
+      [ arc_full_round_start_with_first_partial;
+        arc_intermediate_state;
+        arc_unbatched;
+        arc_full_round_end;
+        (* Adding dummy constants, zeroes, for the last round as we apply the
+           round key at the end of a full round. *)
+        Array.init parameters.state_size (fun _ -> Bls12_381.Fr.(copy zero)) ]
+  in
+  let mds_nb_rows = Array.length parameters.linear_layer in
+  let mds_nb_cols = Array.length parameters.linear_layer.(0) in
+  if mds_nb_cols <> mds_nb_rows then
+    failwith "The parameter MDS must be a square matrix" ;
+  let ctxt =
+    Stubs.allocate_ctxt
+      ~state_size:parameters.state_size
+      ~nb_full_rounds:parameters.nb_of_full_rounds
+      ~nb_partial_rounds:parameters.nb_of_partial_rounds
+      ~batch_size:parameters.batch_size
+      ~ark:modified_ark
+      ~mds:parameters.linear_layer
+  in
+  ctxt
+
+let get_state_size ctxt = Stubs.get_state_size ctxt
+
+let set_state ctxt state =
+  let exp_state_size = Stubs.get_state_size ctxt in
+  let state_size = Array.length state in
+  if state_size <> exp_state_size then
+    failwith
+      (Printf.sprintf
+         "The given array contains %d elements but the expected state size is \
+          %d"
+         state_size
+         exp_state_size) ;
+  Stubs.set_state ctxt state
+
+let get_state ctxt =
+  let state_size = Stubs.get_state_size ctxt in
+  let state = Array.init state_size (fun _ -> Bls12_381.Fr.(copy zero)) in
+  Stubs.get_state state ctxt ;
+  state
+
+let apply_permutation ctxt = Stubs.apply_permutation ctxt

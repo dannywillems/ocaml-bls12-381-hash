@@ -1,17 +1,10 @@
 let test_state_getter_setter () =
-  let state_size, nb_full_rounds, nb_partial_rounds, batch_size, ark, mds =
-    Bls12_381_hash.Poseidon.Parameters.state_size_128_3
+  let open Bls12_381_hash.Poseidon.Parameters in
+  let state =
+    Array.init security_128_state_size_3.state_size (fun _ ->
+        Bls12_381.Fr.random ())
   in
-  let state = Array.init state_size (fun _ -> Bls12_381.Fr.random ()) in
-  let ctxt =
-    Bls12_381_hash.Poseidon.allocate_ctxt
-      state_size
-      nb_full_rounds
-      nb_partial_rounds
-      batch_size
-      ark
-      mds
-  in
+  let ctxt = Bls12_381_hash.Poseidon.allocate_ctxt security_128_state_size_3 in
   let () = Bls12_381_hash.Poseidon.set_state ctxt state in
   assert (
     Array.for_all2
@@ -64,18 +57,10 @@ let test_consistent_with_mec () =
   in
   List.iter
     (fun (state, expected_output) ->
+      let open Bls12_381_hash.Poseidon.Parameters in
       let state = Array.map Bls12_381.Fr.of_string state in
-      let state_size, nb_full_rounds, nb_partial_rounds, batch_size, ark, mds =
-        Bls12_381_hash.Poseidon.Parameters.state_size_128_3
-      in
       let ctxt =
-        Bls12_381_hash.Poseidon.allocate_ctxt
-          state_size
-          nb_full_rounds
-          nb_partial_rounds
-          batch_size
-          ark
-          mds
+        Bls12_381_hash.Poseidon.allocate_ctxt security_128_state_size_3
       in
       let () = Bls12_381_hash.Poseidon.set_state ctxt state in
       let () = Bls12_381_hash.Poseidon.apply_permutation ctxt in
@@ -93,21 +78,19 @@ let test_consistent_with_mec () =
     test_vectors
 
 let test_poseidon128_with_different_batch_size () =
-  let state_size, nb_full_rounds, nb_partial_rounds, _, ark, mds =
-    Bls12_381_hash.Poseidon.Parameters.state_size_128_3
+  let open Bls12_381_hash.Poseidon.Parameters in
+  let state =
+    Array.init security_128_state_size_3.state_size (fun _ ->
+        Bls12_381.Fr.random ())
   in
-  let state = Array.init state_size (fun _ -> Bls12_381.Fr.random ()) in
   let compute_output () =
-    let batch_size' = 2 + Random.int nb_partial_rounds in
-    let ctxt =
-      Bls12_381_hash.Poseidon.allocate_ctxt
-        state_size
-        nb_full_rounds
-        nb_partial_rounds
-        batch_size'
-        ark
-        mds
+    let batch_size' =
+      2 + Random.int security_128_state_size_3.nb_of_partial_rounds
     in
+    let parameters =
+      { security_128_state_size_3 with batch_size = batch_size' }
+    in
+    let ctxt = Bls12_381_hash.Poseidon.allocate_ctxt parameters in
     let () = Bls12_381_hash.Poseidon.set_state ctxt state in
     let () = Bls12_381_hash.Poseidon.apply_permutation ctxt in
     let output = Bls12_381_hash.Poseidon.get_state ctxt in
@@ -126,10 +109,11 @@ let test_poseidon128_with_different_batch_size () =
     output'
 
 let test_random_instanciations_of_poseidon_with_different_batch_size () =
+  let open Bls12_381_hash.Poseidon.Parameters in
   let state_size = 1 + Random.int 10 in
-  let nb_full_rounds = (1 + Random.int 10) * 2 in
-  let nb_partial_rounds = 2 + Random.int 100 in
-  let ark_length = state_size * (nb_full_rounds + nb_partial_rounds) in
+  let nb_of_full_rounds = (1 + Random.int 10) * 2 in
+  let nb_of_partial_rounds = 2 + Random.int 100 in
+  let ark_length = state_size * (nb_of_full_rounds + nb_of_partial_rounds) in
   let ark = Array.init ark_length (fun _ -> Bls12_381.Fr.random ()) in
   let mds =
     Array.init state_size (fun _ ->
@@ -137,16 +121,18 @@ let test_random_instanciations_of_poseidon_with_different_batch_size () =
   in
   let state = Array.init state_size (fun _ -> Bls12_381.Fr.random ()) in
   let compute_output () =
-    let batch_size = 1 + Random.int nb_partial_rounds in
-    let ctxt =
-      Bls12_381_hash.Poseidon.allocate_ctxt
-        state_size
-        nb_full_rounds
-        nb_partial_rounds
+    let batch_size = 1 + Random.int nb_of_partial_rounds in
+    let parameters =
+      { state_size;
+        round_constants = ark;
+        linear_layer = mds;
+        nb_of_full_rounds;
+        nb_of_partial_rounds;
         batch_size
-        ark
-        mds
+      }
     in
+
+    let ctxt = Bls12_381_hash.Poseidon.allocate_ctxt parameters in
     let () = Bls12_381_hash.Poseidon.set_state ctxt state in
     let () = Bls12_381_hash.Poseidon.apply_permutation ctxt in
     let output = Bls12_381_hash.Poseidon.get_state ctxt in
@@ -165,11 +151,11 @@ let test_random_instanciations_of_poseidon_with_different_batch_size () =
     output'
 
 let test_regression_tests_for_poseidon252 () =
-  let state_size, nb_full_rounds, nb_partial_rounds, batch_size, ark, mds =
-    Bls12_381_hash.Poseidon.Parameters.state_size_256_5
-  in
+  let open Bls12_381_hash.Poseidon.Parameters in
   let vectors =
-    [ ( Array.make state_size (Bls12_381.Fr.of_string "19"),
+    [ ( Array.make
+          security_256_state_size_5.state_size
+          (Bls12_381.Fr.of_string "19"),
         [| "2f26f38f20a624eb7ddc58a28f94a868824a320a64a05c7b028be716c3d47938";
            "577a6555ceb8acfcec1024f76a647a63bef97ef490fa875d5d8d640e9c477973";
            "d3c9f03664b22c12a49a428cd13bf60c397105ae18039208598f00270b71472f";
@@ -185,13 +171,7 @@ let test_regression_tests_for_poseidon252 () =
           expected_output
       in
       let ctxt =
-        Bls12_381_hash.Poseidon.allocate_ctxt
-          state_size
-          nb_full_rounds
-          nb_partial_rounds
-          batch_size
-          ark
-          mds
+        Bls12_381_hash.Poseidon.allocate_ctxt security_256_state_size_5
       in
       let () = Bls12_381_hash.Poseidon.set_state ctxt state in
       let () = Bls12_381_hash.Poseidon.apply_permutation ctxt in

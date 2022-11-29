@@ -3,20 +3,36 @@
     BLS12-381 for a security with the permutation [x^5].
 *)
 module Poseidon : sig
+  module Parameters : sig
+    type t =
+      { state_size : int;
+        nb_of_partial_rounds : int;
+        nb_of_full_rounds : int;
+        batch_size : int;
+        round_constants : Bls12_381.Fr.t array;
+        linear_layer : Bls12_381.Fr.t array array
+      }
+
+    (** Parameters for Poseidon with a state size of [3] for a security of
+        128bits.
+        FIXME: The linear layer and the round constants are not standard
+    *)
+    val security_128_state_size_3 : t
+
+    (** Parameters for Poseidon with a state size of [5] for a security of
+        256bits.
+        FIXME: The linear layer and the round constants are not standard
+    *)
+    val security_256_state_size_5 : t
+  end
+
   (** Context of the permutation *)
   type ctxt
 
   (** [allocate_ctxt state_size nb_full_rounds nb_partial_rounds batch_size
       round_constants mds]. Allocate a context for a specific instance of Poseidon
   *)
-  val allocate_ctxt :
-    int ->
-    int ->
-    int ->
-    int ->
-    Bls12_381.Fr.t array ->
-    Bls12_381.Fr.t array array ->
-    ctxt
+  val allocate_ctxt : Parameters.t -> ctxt
 
   (** Return the current state of the context *)
   val get_state : ctxt -> Bls12_381.Fr.t array
@@ -30,32 +46,6 @@ module Poseidon : sig
 
   (** Apply a permutation on the current state of the context *)
   val apply_permutation : ctxt -> unit
-
-  module Parameters : sig
-    (** Parameters for Poseidon with a state size of [3] for a security of
-        128bits. The value is:
-        - state size
-        - number of full rounds
-        - number of partial rounds
-        - batch size
-        - round constants
-        - mds
-    *)
-    val state_size_128_3 :
-      int * int * int * int * Bls12_381.Fr.t array * Bls12_381.Fr.t array array
-
-    (** Parameters for Poseidon with a state size of [5] for a security of
-        256bits. The value is:
-        - state size
-        - number of full rounds
-        - number of partial rounds
-        - batch size
-        - round constants
-        - mds
-    *)
-    val state_size_256_5 :
-      int * int * int * int * Bls12_381.Fr.t array * Bls12_381.Fr.t array array
-  end
 end
 
 (** Implementation of an instantiation of {{: https://eprint.iacr.org/2019/426 }
@@ -79,8 +69,8 @@ module Rescue : sig
         nb_of_rounds : int
       }
 
-    (** Parameters for Rescue with [state_size = 3] and 128 bits of security
-        FIXME: The MDS and the round constants are not standard
+    (** Parameters for Rescue with [state_size = 3] and 128 bits of security.
+        FIXME: The linear layer and the round constants are not standard
     *)
     val security_128_state_size_3 : t
   end
