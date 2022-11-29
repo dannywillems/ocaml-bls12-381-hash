@@ -1,15 +1,13 @@
 let test_state_getter_setter () =
-  let nb_rounds, state_size, constants, alpha_beta_s =
-    Bls12_381_hash.Griffin.Parameters.state_size_3
+  let parameters =
+    Bls12_381_hash.Griffin.Parameters.security_128_state_size_3
   in
-  let ctxt =
-    Bls12_381_hash.Griffin.allocate_ctxt
-      nb_rounds
-      state_size
-      constants
-      alpha_beta_s
+  let ctxt = Bls12_381_hash.Griffin.allocate_ctxt parameters in
+
+  let state =
+    Array.init parameters.Bls12_381_hash.Griffin.Parameters.state_size (fun _ ->
+        Bls12_381.Fr.random ())
   in
-  let state = Array.init state_size (fun _ -> Bls12_381.Fr.random ()) in
   let () = Bls12_381_hash.Griffin.set_state ctxt state in
   assert (
     Array.for_all2 Bls12_381.Fr.eq state (Bls12_381_hash.Griffin.get_state ctxt))
@@ -47,15 +45,9 @@ let test_vectors_griffin_3 () =
       let exp_res1 = Bls12_381.Fr.of_string exp_res1_s in
       let exp_res2 = Bls12_381.Fr.of_string exp_res2_s in
       let exp_res3 = Bls12_381.Fr.of_string exp_res3_s in
-      let nb_rounds, state_size, constants, alpha_beta_s =
-        Bls12_381_hash.Griffin.Parameters.state_size_3
-      in
       let ctxt =
         Bls12_381_hash.Griffin.allocate_ctxt
-          nb_rounds
-          state_size
-          constants
-          alpha_beta_s
+          Bls12_381_hash.Griffin.Parameters.security_128_state_size_3
       in
       let () = Bls12_381_hash.Griffin.set_state ctxt [| x1; x2; x3 |] in
       let () = Bls12_381_hash.Griffin.apply_permutation ctxt in
@@ -102,15 +94,9 @@ let test_vectors_griffin_4 () =
       let exp_res2 = Bls12_381.Fr.of_string exp_res2_s in
       let exp_res3 = Bls12_381.Fr.of_string exp_res3_s in
       let exp_res4 = Bls12_381.Fr.of_string exp_res4_s in
-      let nb_rounds, state_size, constants, alpha_beta_s =
-        Bls12_381_hash.Griffin.Parameters.state_size_4
-      in
       let ctxt =
-        Bls12_381_hash.Griffin.allocate_ctxt
-          nb_rounds
-          state_size
-          constants
-          alpha_beta_s
+        Bls12_381_hash.Griffin.(
+          allocate_ctxt Parameters.security_128_state_size_4)
       in
       let () = Bls12_381_hash.Griffin.set_state ctxt [| x1; x2; x3; x4 |] in
       let () = Bls12_381_hash.Griffin.apply_permutation ctxt in

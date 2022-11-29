@@ -1,10 +1,7 @@
 (** Implementation of
     {{:https://eprint.iacr.org/2019/458.pdf} Poseidon} over the scalar field of
     BLS12-381 for a security with the permutation [x^5].
-
-    {b The current implementation only provides the functions to run a
-       permutation. The user is responsible to build a hash function on top of
-       it. } *)
+*)
 module Poseidon : sig
   (** Context of the permutation *)
   type ctxt
@@ -231,16 +228,40 @@ end
     of BLS12-381 for a security of 128 bits and with the permutation [x^5].
 *)
 module Griffin : sig
+  module Parameters : sig
+    type t =
+      { nb_of_rounds : int;
+        state_size : int;
+        round_constants : Bls12_381.Fr.t array;
+        alpha_beta_s : Bls12_381.Fr.t array
+      }
+
+    (** Exponent for the substitution box. For BLS12-381, it is [5] *)
+    val d : Bls12_381.Fr.t
+
+    (** Inverse of the exponent for the substitution box. For BLS12-381, it is
+        [20974350070050476191779096203274386335076221000211055129041463479975432473805] *)
+    val d_inv : Bls12_381.Fr.t
+
+    (** Parameters for Griffin with a state size of [3] for a security of
+        128bits
+    *)
+    val security_128_state_size_3 : t
+
+    (** Parameters for Griffin with a state size of [4] for a security of 128
+        bits
+    *)
+    val security_128_state_size_4 : t
+  end
+
   (** Context of the instance. It contains the states and the parameters such as
       the state size, the constants and the alpha/beta's *)
   type ctxt
 
-  (** [allocate_ctxt nb_rounds state_size round_constants alpha_beta_s] allocates a new
-      context for an instance of Griffin with a state of size [state_size], with
-      round constants [round_constants] and alpha/beta values set to [alpha_beta_s].
+  (** [allocate_ctxt parameters] allocates a new context for an instance of
+      Griffin with the parameters [parameters].
   *)
-  val allocate_ctxt :
-    int -> int -> Bls12_381.Fr.t array -> Bls12_381.Fr.t array -> ctxt
+  val allocate_ctxt : Parameters.t -> ctxt
 
   (** [apply_permutation ctxt] applies a permutation on the state. The context
       is modified *)
@@ -260,31 +281,4 @@ module Griffin : sig
 
   (** Return the state size of the context *)
   val get_state_size : ctxt -> int
-
-  module Parameters : sig
-    (** Exponent for the substitution box. For BLS12-381, it is [5] *)
-    val d : Bls12_381.Fr.t
-
-    (** Inverse of the exponent for the substitution box. For BLS12-381, it is
-        [20974350070050476191779096203274386335076221000211055129041463479975432473805] *)
-    val d_inv : Bls12_381.Fr.t
-
-    (** Parameters for Griffin with a state size of [3] for a security of
-        128bits. The value is:
-        - number of rounds
-        - state size
-        - round constants
-        - alpha/beta's
-    *)
-    val state_size_3 : int * int * Bls12_381.Fr.t array * Bls12_381.Fr.t array
-
-    (** Parameters for Griffin with a state size of [4] for a security of 128
-        bits. The value is:
-        - number of rounds
-        - state size
-        - round constants
-        - alpha/beta's
-    *)
-    val state_size_4 : int * int * Bls12_381.Fr.t array * Bls12_381.Fr.t array
-  end
 end
