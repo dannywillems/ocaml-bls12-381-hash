@@ -115,7 +115,7 @@ end
     of BLS12-381.
 
     The state of the permutation Anemoi is [m], where [m] is a multiple of [2].
-    It is commonly refered by [l] such that [m = 2 l].
+    It is commonly refered by [l] such that [m = 2l].
 *)
 module Anemoi : sig
   (** Set of parameters for BLS12-381, and parameters for specific
@@ -165,8 +165,8 @@ module Anemoi : sig
     val gamma : Bls12_381.Fr.t
 
     (** [compute_number_of_rounds state_size security] computes the minimal
-        number of rounds for an instance of Anemoi with a state size of [m =
-        state_size] to reach a security level of [security] bits. The
+        number of rounds for an instance of Anemoi with a state size of
+        [m = state_size] to reach a security level of [security] bits. The
         computation follows the formula given in section 5.2 *)
     val compute_number_of_rounds : int -> int -> int
 
@@ -176,22 +176,22 @@ module Anemoi : sig
     val generate_constants : int -> int -> Bls12_381.Fr.t array
 
     (** Parameters for the permutation Anemoi for a state size of [m = 2] (i.e.
-        [l = 1]) and 128 bits of security given in the paper.
+        [l = 1]) and 128 bits of security given in the paper
     *)
     val security_128_state_size_2 : t
 
     (** Parameters for the permutation Anemoi for a state size of [m = 4] (i.e.
-        [l = 2]) and 128 bits of security given in the paper.
+        [l = 2]) and 128 bits of security given in the paper
     *)
     val security_128_state_size_4 : t
 
     (** Parameters for the permutation Anemoi for a state size of [m = 6] (i.e.
-        [l = 3]) and 128 bits of security given in the paper.
+        [l = 3]) and 128 bits of security given in the paper
     *)
     val security_128_state_size_6 : t
 
     (** Parameters for the permutation Anemoi for a state size of [m = 8] (i.e.
-        [l = 4]) and 128 bits of security given in the paper.
+        [l = 4]) and 128 bits of security given in the paper
     *)
     val security_128_state_size_8 : t
   end
@@ -200,7 +200,7 @@ module Anemoi : sig
   type ctxt
 
   (** [allocate_ctxt parameters]. Allocate a context for a specific instance of
-      Anemoi specific by [parameters].
+      Anemoi parametrized by [parameters].
   *)
   val allocate_ctxt : Parameters.t -> ctxt
 
@@ -216,7 +216,7 @@ module Anemoi : sig
 
   (** [apply_one_round ctxt i_round_key] applies only one round of the permutation on the
       state. [i_round_key] is the index of the first round constant to use for the
-      round. The context is modified. *)
+      round. The context is modified *)
   val apply_one_round : ctxt -> int -> unit
 
   (** Apply a permutation on the current state of the context *)
@@ -243,7 +243,7 @@ module Griffin : sig
     int -> int -> Bls12_381.Fr.t array -> Bls12_381.Fr.t array -> ctxt
 
   (** [apply_permutation ctxt] applies a permutation on the state. The context
-      is modified. *)
+      is modified *)
   val apply_permutation : ctxt -> unit
 
   (** [apply_one_round ctxt i_round_key] applies only one round of the permutation on the
