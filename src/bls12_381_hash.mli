@@ -69,13 +69,29 @@ end
     this script}.
 *)
 module Rescue : sig
+  (** Set of parameters for BLS12-381, and parameters for specific
+      instantiations given in the reference paper *)
+  module Parameters : sig
+    type t =
+      { linear_layer : Bls12_381.Fr.t array array;
+        round_constants : Bls12_381.Fr.t array;
+        state_size : int;
+        nb_of_rounds : int
+      }
+
+    (** Parameters for Rescue with [state_size = 3] and 128 bits of security
+        FIXME: The MDS and the round constants are not standard
+    *)
+    val security_128_state_size_3 : t
+  end
+
   (** Context of the permutation *)
   type ctxt
 
-  (** [allocate_ctxt mds round_constants nb_rounds state_size]. Allocate a
-      context for a specific instance of Rescue *)
-  val allocate_ctxt :
-    Bls12_381.Fr.t array array -> Bls12_381.Fr.t array -> int -> int -> ctxt
+  (** [allocate_ctxt parameters]. Allocate a context for a specific instance of
+      Rescue
+  *)
+  val allocate_ctxt : Parameters.t -> ctxt
 
   (** Return the current state of the context *)
   val get_state : ctxt -> Bls12_381.Fr.t array
@@ -89,22 +105,6 @@ module Rescue : sig
 
   (** Apply a permutation on the current state of the context *)
   val apply_permutation : ctxt -> unit
-
-  (** Set of parameters for BLS12-381, and parameters for specific
-      instantiations given in the reference paper *)
-  module Parameters : sig
-    (** Parameters for Rescue with [state_size = 3] and 128 bits of security
-        The parameters are:
-        - number of rounds
-        - state size
-        - MDS matrix
-        - round constants
-
-        FIXME: The MDS and the round constants are not standard
-    *)
-    val state_size_3 :
-      int * int * Bls12_381.Fr.t array array * Bls12_381.Fr.t array
-  end
 end
 
 (** Implementation of {{: https://eprint.iacr.org/2022/840}

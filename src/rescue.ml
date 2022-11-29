@@ -18,36 +18,14 @@ module Stubs = struct
     = "caml_bls12_381_hash_rescue_set_state_stubs"
 end
 
-type ctxt = Stubs.ctxt
-
-let allocate_ctxt mds round_constants nb_round state_size =
-  if state_size <> 3 then
-    failwith "Only suppporting state size of 3 at the moment" ;
-  Stubs.allocate_ctxt mds round_constants nb_round state_size
-
-let apply_permutation ctxt = Stubs.apply_permutation ctxt
-
-let set_state ctxt state =
-  let exp_state_size = Stubs.get_state_size ctxt in
-  let state_size = Array.length state in
-  if state_size <> exp_state_size then
-    failwith
-      (Printf.sprintf
-         "The given array contains %d elements but the expected state size is \
-          %d"
-         state_size
-         exp_state_size) ;
-  Stubs.set_state ctxt state
-
-let get_state_size ctxt = Stubs.get_state_size ctxt
-
-let get_state ctxt =
-  let state_size = Stubs.get_state_size ctxt in
-  let state = Array.init state_size (fun _ -> Bls12_381.Fr.(copy zero)) in
-  Stubs.get_state state ctxt ;
-  state
-
 module Parameters = struct
+  type t =
+    { linear_layer : Bls12_381.Fr.t array array;
+      round_constants : Bls12_381.Fr.t array;
+      state_size : int;
+      nb_of_rounds : int
+    }
+
   let state_size_3_mds =
     [| [| "343";
           "52435875175126190479447740508185965837690552500527637822603658699938581184114";
@@ -152,5 +130,44 @@ module Parameters = struct
     |]
     |> Array.map Bls12_381.Fr.of_string
 
-  let state_size_3 = (14, 3, state_size_3_mds, state_size_3_round_constants)
+  let security_128_state_size_3 =
+    { nb_of_rounds = 14;
+      state_size = 3;
+      linear_layer = state_size_3_mds;
+      round_constants = state_size_3_round_constants
+    }
 end
+
+type ctxt = Stubs.ctxt
+
+let allocate_ctxt parameters =
+  let open Parameters in
+  if parameters.state_size <> 3 then
+    failwith "Only suppporting state size of 3 at the moment" ;
+  Stubs.allocate_ctxt
+    parameters.linear_layer
+    parameters.round_constants
+    parameters.nb_of_rounds
+    parameters.state_size
+
+let apply_permutation ctxt = Stubs.apply_permutation ctxt
+
+let set_state ctxt state =
+  let exp_state_size = Stubs.get_state_size ctxt in
+  let state_size = Array.length state in
+  if state_size <> exp_state_size then
+    failwith
+      (Printf.sprintf
+         "The given array contains %d elements but the expected state size is \
+          %d"
+         state_size
+         exp_state_size) ;
+  Stubs.set_state ctxt state
+
+let get_state_size ctxt = Stubs.get_state_size ctxt
+
+let get_state ctxt =
+  let state_size = Stubs.get_state_size ctxt in
+  let state = Array.init state_size (fun _ -> Bls12_381.Fr.(copy zero)) in
+  Stubs.get_state state ctxt ;
+  state
