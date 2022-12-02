@@ -78,18 +78,17 @@ void anemoi_fr_multiply_by_g_square_plus_g(blst_fr *res, blst_fr *v) {
   anemoi_fr_multiply_by_g_plus_one(res, &tmp);
 }
 
-void anemoi_generic_add_constant(anemoi_ctxt_t *ctxt, int i_rc) {
-  // NB: 4 is the jump to perform as the constants are for up to l = 4. If we
-  // generate for more instances, this value must be changed.
+void anemoi_apply_constants_addition(anemoi_ctxt_t *ctxt, int round) {
   blst_fr *state = anemoi_get_state_from_context(ctxt);
+  int state_size = anemoi_get_state_size_from_context(ctxt);
   blst_fr *state_x = state;
   blst_fr *state_y = state + ctxt->l;
   blst_fr *constants = anemoi_get_round_constants_from_context(ctxt);
   blst_fr *constants_x = constants;
   blst_fr *constants_y = constants + ctxt->nb_rounds * ctxt->l;
   for (int i = 0; i < ctxt->l; i++) {
-    blst_fr_add(state_x + i, state_x + i, constants_x + i_rc);
-    blst_fr_add(state_y + i, state_y + i, constants_y + i_rc++);
+    blst_fr_add(state_x + i, state_x + i, constants_x + ctxt->l * round + i);
+    blst_fr_add(state_y + i, state_y + i, constants_y + ctxt->l * round + i);
   }
 }
 
@@ -630,7 +629,7 @@ void anemoi_1_apply(anemoi_ctxt_t *ctxt) {
   index_cst = 0;
   for (int i = 0; i < ctxt->nb_rounds; i++) {
     // add cst
-    anemoi_generic_add_constant(ctxt, i);
+    anemoi_apply_constants_addition(ctxt, i);
     // apply linear layer
     anemoi_1_apply_linear_layer(ctxt);
     // apply sbox
@@ -698,39 +697,14 @@ void anemoi_generic_apply_linear_layer(anemoi_ctxt_t *ctxt) {
   }
 }
 
-void anemoi_apply_one_round(anemoi_ctxt_t *ctxt, int idx) {
-  blst_fr *state = anemoi_get_state_from_context(ctxt);
-
+void anemoi_apply_flystel(anemoi_ctxt_t *ctxt) {
   if (ctxt->l == 1) {
-    anemoi_generic_add_constant(ctxt, idx);
-    anemoi_1_apply_linear_layer(ctxt);
     anemoi_1_apply_flystel(ctxt);
-  }
-
-  else if (ctxt->l == 2) {
-    anemoi_generic_add_constant(ctxt, idx);
-    anemoi_2_apply_linear_layer(ctxt);
+  } else
     anemoi_generic_apply_flystel(ctxt);
-  } else if (ctxt->l == 3) {
-    anemoi_generic_add_constant(ctxt, idx);
-    anemoi_3_apply_linear_layer(ctxt);
-    anemoi_generic_apply_flystel(ctxt);
-  } else if (ctxt->l == 4) {
-    anemoi_generic_add_constant(ctxt, idx);
-    anemoi_4_apply_linear_layer(ctxt);
-    anemoi_generic_apply_flystel(ctxt);
-  } else {
-    anemoi_generic_add_constant(ctxt, idx);
-    anemoi_generic_apply_linear_layer(ctxt);
-    anemoi_generic_apply_flystel(ctxt);
-  }
 }
 
-void anemoi_apply_permutation(anemoi_ctxt_t *ctxt) {
-  for (int i = 0; i < ctxt->nb_rounds; i++) {
-    anemoi_apply_one_round(ctxt, i * ctxt->l);
-  }
-
+void anemoi_apply_linear_layer(anemoi_ctxt_t *ctxt) {
   if (ctxt->l == 1) {
     anemoi_1_apply_linear_layer(ctxt);
   }
@@ -750,6 +724,20 @@ void anemoi_apply_permutation(anemoi_ctxt_t *ctxt) {
   else {
     anemoi_generic_apply_linear_layer(ctxt);
   }
+}
+
+void anemoi_apply_one_round(anemoi_ctxt_t *ctxt, int round) {
+  anemoi_apply_constants_addition(ctxt, round);
+  anemoi_apply_linear_layer(ctxt);
+  anemoi_apply_flystel(ctxt);
+}
+
+void anemoi_apply_permutation(anemoi_ctxt_t *ctxt) {
+  for (int i = 0; i < ctxt->nb_rounds; i++) {
+    anemoi_apply_one_round(ctxt, i);
+  }
+
+  anemoi_apply_linear_layer(ctxt);
 }
 
 void anemoi_set_state_from_context(anemoi_ctxt_t *ctxt, blst_fr *state) {

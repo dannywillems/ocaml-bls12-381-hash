@@ -140,10 +140,34 @@ CAMLprim value caml_bls12_381_hash_anemoi_apply_permutation_stubs(value vctxt) {
 }
 
 CAMLprim value caml_bls12_381_hash_anemoi_apply_one_round_stubs(value vctxt,
-                                                                value vidx) {
-  CAMLparam2(vctxt, vidx);
+                                                                value vround) {
+  CAMLparam2(vctxt, vround);
   anemoi_ctxt_t *ctxt = Anemoi_ctxt_val(vctxt);
-  int idx = Int_val(vidx);
-  anemoi_apply_one_round(ctxt, idx);
+  int round = Int_val(vround);
+  anemoi_apply_one_round(ctxt, round);
+  CAMLreturn(Val_unit);
+}
+
+CAMLprim value caml_bls12_381_hash_anemoi_apply_constants_addition_stubs(
+    value vctxt, value vround) {
+  CAMLparam2(vctxt, vround);
+  anemoi_ctxt_t *ctxt = Anemoi_ctxt_val(vctxt);
+  int round = Int_val(vround);
+  anemoi_apply_constants_addition(ctxt, round);
+  CAMLreturn(Val_unit);
+}
+
+CAMLprim value caml_bls12_381_hash_anemoi_apply_flystel_stubs(value vctxt) {
+  CAMLparam1(vctxt);
+  anemoi_ctxt_t *ctxt = Anemoi_ctxt_val(vctxt);
+  anemoi_apply_flystel(ctxt);
+  CAMLreturn(Val_unit);
+}
+
+CAMLprim value
+caml_bls12_381_hash_anemoi_apply_linear_layer_stubs(value vctxt) {
+  CAMLparam1(vctxt);
+  anemoi_ctxt_t *ctxt = Anemoi_ctxt_val(vctxt);
+  anemoi_apply_linear_layer(ctxt);
   CAMLreturn(Val_unit);
 }

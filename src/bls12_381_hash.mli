@@ -206,16 +206,29 @@ module Anemoi : sig
       value [state] must be of the same size than the expecting state *)
   val set_state : ctxt -> Bls12_381.Fr.t array -> unit
 
-  (** [apply_one_round ctxt i_round_key] applies only one round of the permutation on the
-      state. [i_round_key] is the index of the first round constant to use for the
-      round. The context is modified *)
+  (** [apply_linear_layer ctxt] applies the linear layer on the state. The
+      context is modified *)
+  val apply_linear_layer : ctxt -> unit
+
+  (** [apply_flystel ctxt] applies the Flystel construction on the context.
+      The context is modified *)
+  val apply_flystel : ctxt -> unit
+
+  (** [apply_constants_addition ctxt round] applies the constant addition for the
+      round [round]. The context is modified *)
+  val apply_constants_addition : ctxt -> int -> unit
+
+  (** [apply_one_round ctxt round] applies the round [round] on the state. The
+      context is modified *)
   val apply_one_round : ctxt -> int -> unit
 
-  (** Apply a permutation on the current state of the context *)
+  (** Apply a permutation on the current state of the context. A permutation
+      consists of applying [n] times the function {!apply_one_round} where [n] is
+      the number of rounds for the given security parameters *)
   val apply_permutation : ctxt -> unit
 
-  (** [jive128_1 x y] calls the permutation Anemoi for [l = 1] with the state [S = (x, y)] and
-      apply Jive on the output *)
+  (** [jive128_1 x y] calls the permutation Anemoi for [l = 1] with the state
+      [S = (x, y)] and apply Jive on the output *)
   val jive128_1 : Bls12_381.Fr.t -> Bls12_381.Fr.t -> Bls12_381.Fr.t
 end
 
@@ -262,9 +275,8 @@ module Griffin : sig
       is modified *)
   val apply_permutation : ctxt -> unit
 
-  (** [apply_one_round ctxt i_round_key] applies only one round of the permutation on the
-      state. [i_round_key] is the index of the first round constant to use for the
-      round. The context is modified *)
+  (** [apply_one_round ctxt round] applies only one round of the permutation on the
+      state. [round] is the round number. The context is modified *)
   val apply_one_round : ctxt -> int -> unit
 
   (** [set_state ctxt state]. Set the context state to the given value. The

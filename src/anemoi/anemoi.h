@@ -13,10 +13,21 @@ typedef struct anemoi_ctxt_s {
   blst_fr *ctxt;
 } anemoi_ctxt_t;
 
+/* Apply n times the SPN construction where [n] is the number of rounds for the
+   instances */
 void anemoi_apply_permutation(anemoi_ctxt_t *ctxt);
 
-void anemoi_apply_one_round(anemoi_ctxt_t *ctxt, int idx);
+/* Apply one round of the SPN construction */
+void anemoi_apply_one_round(anemoi_ctxt_t *ctxt, int round);
 
+/* Building blocks of the SPN permutation  */
+void anemoi_apply_constants_addition(anemoi_ctxt_t *ctxt, int round);
+
+void anemoi_apply_linear_layer(anemoi_ctxt_t *ctxt);
+
+void anemoi_apply_flystel(anemoi_ctxt_t *ctxt);
+
+/* Context related functions */
 blst_fr *anemoi_get_state_from_context(anemoi_ctxt_t *ctxt);
 
 anemoi_ctxt_t *anemoi_allocate_context(int l, int nb_rounds);

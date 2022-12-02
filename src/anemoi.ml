@@ -10,6 +10,15 @@ module Stubs = struct
   external set_state : ctxt -> Bls12_381.Fr.t array -> unit
     = "caml_bls12_381_hash_anemoi_set_state_stubs"
 
+  external anemoi_apply_flystel : ctxt -> unit
+    = "caml_bls12_381_hash_anemoi_apply_flystel_stubs"
+
+  external anemoi_apply_linear_layer : ctxt -> unit
+    = "caml_bls12_381_hash_anemoi_apply_linear_layer_stubs"
+
+  external anemoi_apply_constants_addition : ctxt -> int -> unit
+    = "caml_bls12_381_hash_anemoi_apply_constants_addition_stubs"
+
   external anemoi_apply_one_round : ctxt -> int -> unit
     = "caml_bls12_381_hash_anemoi_apply_one_round_stubs"
 
@@ -205,7 +214,14 @@ let get_state ctxt =
   Stubs.get_state state ctxt ;
   state
 
+let apply_constants_addition ctxt round =
+  Stubs.anemoi_apply_constants_addition ctxt round
+
+let apply_linear_layer ctxt = Stubs.anemoi_apply_linear_layer ctxt
+
 let apply_one_round ctxt idx = Stubs.anemoi_apply_one_round ctxt idx
+
+let apply_flystel ctxt = Stubs.anemoi_apply_flystel ctxt
 
 let apply_permutation ctxt = Stubs.anemoi_apply_permutation ctxt
 
