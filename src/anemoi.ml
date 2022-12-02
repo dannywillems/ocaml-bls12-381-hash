@@ -118,6 +118,14 @@ module Parameters = struct
       round_constants = generate_constants 19 1
     }
 
+  let security_141_state_size_2 =
+    { security = 141;
+      nb_rounds = 20;
+      state_size = 2;
+      linear_layer = Bls12_381.Fr.[| [| one; g |]; [| g; square g + one |] |];
+      round_constants = generate_constants 20 1
+    }
+
   let security_128_state_size_4 =
     { security = 128;
       nb_rounds = 12;

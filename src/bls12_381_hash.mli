@@ -167,6 +167,11 @@ module Anemoi : sig
     *)
     val security_128_state_size_2 : t
 
+    (** Parameters for the permutation Anemoi for a state size of [m = 2] (i.e.
+        [l = 1]) and 141 bits of security
+    *)
+    val security_141_state_size_2 : t
+
     (** Parameters for the permutation Anemoi for a state size of [m = 4] (i.e.
         [l = 2]) and 128 bits of security given in the paper
     *)
