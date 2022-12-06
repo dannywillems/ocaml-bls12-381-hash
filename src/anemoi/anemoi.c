@@ -56,31 +56,8 @@ void anemoi_fr_multiply_by_g(blst_fr *res, blst_fr *v) {
 
 void blst_fr_double(blst_fr *r, blst_fr *x) { blst_fr_add(r, x, x); }
 
-void anemoi_fr_multiply_by_g_square(blst_fr *res, blst_fr *v) {
-  blst_fr tmp;
-
-  anemoi_fr_multiply_by_g(&tmp, v);
-  anemoi_fr_multiply_by_g(&tmp, &tmp);
-}
-
-void anemoi_fr_multiply_by_g_plus_one(blst_fr *res, blst_fr *v) {
-  blst_fr tmp;
-
-  blst_fr_double(&tmp, v);
-  blst_fr_double(&tmp, &tmp);
-  blst_fr_double(res, &tmp);
-}
-
-void anemoi_fr_multiply_by_g_square_plus_g(blst_fr *res, blst_fr *v) {
-  blst_fr tmp;
-
-  anemoi_fr_multiply_by_g(&tmp, v);
-  anemoi_fr_multiply_by_g_plus_one(res, &tmp);
-}
-
 void anemoi_apply_constants_addition(anemoi_ctxt_t *ctxt, int round) {
   blst_fr *state = anemoi_get_state_from_context(ctxt);
-  int state_size = anemoi_get_state_size_from_context(ctxt);
   blst_fr *state_x = state;
   blst_fr *state_y = state + ctxt->l;
   blst_fr *constants = anemoi_get_round_constants_from_context(ctxt);
@@ -624,9 +601,6 @@ void anemoi_1_apply_flystel(anemoi_ctxt_t *ctxt) {
 }
 
 void anemoi_1_apply(anemoi_ctxt_t *ctxt) {
-  int index_cst;
-
-  index_cst = 0;
   for (int i = 0; i < ctxt->nb_rounds; i++) {
     // add cst
     anemoi_apply_constants_addition(ctxt, i);
