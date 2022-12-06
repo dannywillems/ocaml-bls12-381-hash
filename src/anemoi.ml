@@ -109,6 +109,14 @@ module Parameters = struct
     in
     max 10 (security_margin + aux 0)
 
+  let get_number_of_rounds p = p.nb_rounds
+
+  let get_round_constants p = p.round_constants
+
+  let get_matrix p = p.linear_layer
+
+  let get_state_size p = p.state_size
+
   let create security state_size linear_layer =
     if state_size mod 2 = 1 then failwith "State size must be a multiple of 2" ;
     if state_size = 2 || state_size = 4 || state_size = 6 || state_size = 8 then

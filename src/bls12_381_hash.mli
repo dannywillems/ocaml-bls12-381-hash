@@ -162,6 +162,14 @@ module Anemoi : sig
         the C's followed by the D's as described in the paper in section 5.1 *)
     val generate_constants : int -> int -> Bls12_381.Fr.t array
 
+    val get_round_constants : t -> Bls12_381.Fr.t array
+
+    val get_matrix : t -> Bls12_381.Fr.t array array
+
+    val get_number_of_rounds : t -> int
+
+    val get_state_size : t -> int
+
     (** Parameters for the permutation Anemoi for a state size of [m = 2] (i.e.
         [l = 1]) and 128 bits of security given in the paper
     *)
