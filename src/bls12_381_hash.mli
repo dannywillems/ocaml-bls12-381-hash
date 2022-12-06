@@ -236,8 +236,14 @@ module Anemoi : sig
   val apply_permutation : ctxt -> unit
 
   (** [jive128_1 x y] calls the permutation Anemoi for [l = 1] with the state
-      [S = (x, y)] and apply Jive on the output *)
+      [S = (x, y)] and apply Jive on the output. Expected security is 128
+      bits *)
   val jive128_1 : Bls12_381.Fr.t -> Bls12_381.Fr.t -> Bls12_381.Fr.t
+
+  (** [jive141_1 x y] calls the permutation Anemoi for [l = 1] with the state
+      [S = (x, y)] and apply Jive on the output. Expected security is 141
+      bits *)
+  val jive141_1 : Bls12_381.Fr.t -> Bls12_381.Fr.t -> Bls12_381.Fr.t
 end
 
 (** {{: https://eprint.iacr.org/2022/403.pdf } Griffin } over the scalar field

@@ -240,3 +240,11 @@ let jive128_1 x y =
   let () = apply_permutation ctxt in
   let state = get_state ctxt in
   Bls12_381.Fr.(x + y + state.(0) + state.(1))
+
+let jive141_1 x y =
+  let state = [| x; y |] in
+  let ctxt = allocate_ctxt Parameters.security_141_state_size_2 in
+  let () = set_state ctxt state in
+  let () = apply_permutation ctxt in
+  let state = get_state ctxt in
+  Bls12_381.Fr.(x + y + state.(0) + state.(1))
