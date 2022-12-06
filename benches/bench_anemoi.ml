@@ -4,7 +4,7 @@ let t1 =
   let a, b = (Bls12_381.Fr.random (), Bls12_381.Fr.random ()) in
   let name = "Benchmark AnemoiJive128_1" in
   Bench.Test.create ~name (fun () ->
-      ignore @@ Bls12_381_hash.Anemoi.jive128_1 a b)
+      ignore @@ Bls12_381_hash.Permutation.Anemoi.jive128_1 a b)
 
 let t2 l =
   let state_size = l * 2 in
@@ -17,19 +17,19 @@ let t2 l =
   in
   let parameters =
     if state_size = 2 then
-      Bls12_381_hash.Anemoi.Parameters.security_128_state_size_2
+      Bls12_381_hash.Permutation.Anemoi.Parameters.security_128_state_size_2
     else if state_size = 4 then
-      Bls12_381_hash.Anemoi.Parameters.security_128_state_size_4
+      Bls12_381_hash.Permutation.Anemoi.Parameters.security_128_state_size_4
     else if state_size = 6 then
-      Bls12_381_hash.Anemoi.Parameters.security_128_state_size_6
+      Bls12_381_hash.Permutation.Anemoi.Parameters.security_128_state_size_6
     else if state_size = 8 then
-      Bls12_381_hash.Anemoi.Parameters.security_128_state_size_8
-    else Bls12_381_hash.Anemoi.Parameters.create 128 state_size mds
+      Bls12_381_hash.Permutation.Anemoi.Parameters.security_128_state_size_8
+    else Bls12_381_hash.Permutation.Anemoi.Parameters.create 128 state_size mds
   in
-  let ctxt = Bls12_381_hash.Anemoi.allocate_ctxt parameters in
-  let () = Bls12_381_hash.Anemoi.set_state ctxt state in
+  let ctxt = Bls12_381_hash.Permutation.Anemoi.allocate_ctxt parameters in
+  let () = Bls12_381_hash.Permutation.Anemoi.set_state ctxt state in
   Bench.Test.create ~name (fun () ->
-      Bls12_381_hash.Anemoi.apply_permutation ctxt)
+      Bls12_381_hash.Permutation.Anemoi.apply_permutation ctxt)
 
 let command = Bench.make_command [t1; t2 1; t2 2; t2 3; t2 4; t2 5; t2 6; t2 10]
 

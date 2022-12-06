@@ -138,6 +138,8 @@ module Parameters = struct
     }
 end
 
+type parameters = Parameters.t
+
 type ctxt = Stubs.ctxt
 
 let allocate_ctxt parameters =
