@@ -23,5 +23,6 @@
  (library_flags :standard -linkall -ccopt -lpthread)
  (foreign_stubs
   (language c)
+  (flags -Wall -Wextra)
   (names caml_anemoi_stubs anemoi caml_poseidon_stubs poseidon
     caml_rescue_stubs rescue caml_griffin_stubs griffin)))

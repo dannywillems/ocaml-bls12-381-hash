@@ -97,6 +97,10 @@ CAMLprim value caml_bls12_381_hash_poseidon_allocate_ctxt_stubs(
 
 CAMLprim value caml_bls12_381_hash_poseidon_allocate_ctxt_stubs_bytecode(
     value *argv, value argc) {
+  if (argc != 6) {
+    caml_failwith("caml_bls12_381_hash_poseidon_allocate_ctxt_stubs_bytecode: "
+                  "wrong argc value");
+  }
   return caml_bls12_381_hash_poseidon_allocate_ctxt_stubs(
       argv[0], argv[1], argv[2], argv[3], argv[4], argv[5]);
 }

@@ -416,8 +416,8 @@ void griffin_apply_non_linear_layer(griffin_ctxt_t *ctxt) {
   blst_fr acc_l_i;
   memcpy(&acc_l_i, state + 1, sizeof(blst_fr));
 
-  // y_2 = x_2 * [y_0 + y_1] + \
-  //       alpha_2 * [y_0 + y_1] + \
+  // y_2 = x_2 * [y_0 + y_1] +
+  //       alpha_2 * [y_0 + y_1] +
   //       beta_2
 
   // Will be x_(i - 1) and also will contain alpha_i * acc_l_i
@@ -502,8 +502,6 @@ void griffin_apply_linear_layer_4(griffin_ctxt_t *ctxt) {
   blst_fr_add(state + 3, state + 3, &x0_copy);
 }
 
-void griffin_apply_linear_layer(griffin_ctxt_t *ctxt) {}
-
 int griffin_add_constant(griffin_ctxt_t *ctxt, int i_round_key) {
   blst_fr *state = griffin_get_state_from_context(ctxt);
   blst_fr *constants = griffin_get_round_constants_from_context(ctxt);
@@ -524,7 +522,8 @@ int griffin_apply_one_round(griffin_ctxt_t *ctxt, int i_round_key) {
   } else if (ctxt->state_size == 4) {
     griffin_apply_linear_layer_4(ctxt);
   } else {
-    griffin_apply_linear_layer(ctxt);
+    // Only 3 and 4 is supported at the moment
+    assert(1);
   }
   // Constant
   i_round_key = griffin_add_constant(ctxt, i_round_key);
@@ -539,7 +538,8 @@ void griffin_apply_permutation(griffin_ctxt_t *ctxt) {
   } else if (ctxt->state_size == 4) {
     griffin_apply_linear_layer_4(ctxt);
   } else {
-    griffin_apply_linear_layer(ctxt);
+    // Only 3 and 4 is supported at the moment
+    assert(1);
   }
 
   for (int i = 0; i < ctxt->nb_rounds; i++) {
