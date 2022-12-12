@@ -25,6 +25,30 @@ let test_fail_input_size_and_parameters_do_not_match () =
           @@ Bls12_381_hash.Mode.Jive.digest (module P) security_param input))
     args
 
+let test_fail_b_does_not_divide_input_size () =
+  let args :
+      ((module Bls12_381_hash.PERMUTATION with type parameters = 'p) * 'p) list
+      =
+    [ ( (module Bls12_381_hash.Permutation.Anemoi : Bls12_381_hash.PERMUTATION
+          with type parameters = 'p),
+        Bls12_381_hash.Permutation.Anemoi.Parameters.security_128_state_size_2
+      );
+      ( (module Bls12_381_hash.Permutation.Anemoi : Bls12_381_hash.PERMUTATION
+          with type parameters = 'p),
+        Bls12_381_hash.Permutation.Anemoi.Parameters.security_128_state_size_6
+      ) ]
+  in
+  List.iter
+    (fun ( (module P : Bls12_381_hash.PERMUTATION with type parameters = 'p),
+           (security_param : 'p) ) ->
+      let input_size = 2 in
+      let input = Array.init input_size (fun _ -> Bls12_381.Fr.random ()) in
+      let msg = "b must divide the state size" in
+      Alcotest.check_raises msg (Failure msg) (fun () ->
+          ignore
+          @@ Bls12_381_hash.Mode.Jive.digest_b (module P) security_param input 4))
+    args
+
 let test_anemoi_state_size_2 () =
   let module P = Bls12_381_hash.Permutation.Anemoi in
   let x = Bls12_381.Fr.random () in
@@ -112,11 +136,15 @@ let () =
   let open Alcotest in
   run
     "The mode of operation Jive"
-    [ ( "Generic",
+    [ ( "Exceptions",
         [ test_case
-            "Raise exception if input size does not correspond to parameters"
+            "input size does not correspond to parameters"
             `Quick
-            test_fail_input_size_and_parameters_do_not_match ] );
+            test_fail_input_size_and_parameters_do_not_match;
+          test_case
+            "b does not divide the state size"
+            `Quick
+            test_fail_b_does_not_divide_input_size ] );
       ( "Anemoi",
         [ test_case "b = 2, state_size = 2" `Quick test_anemoi_state_size_2;
           test_case "b = 2, state_size = 4" `Quick test_anemoi_state_size_4;

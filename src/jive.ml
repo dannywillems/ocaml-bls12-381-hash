@@ -1,7 +1,7 @@
 let digest_b (type p) (module P : S.PERMUTATION with type parameters = p)
     (parameters : p) input b =
   let state_size = Array.length input in
-  if state_size mod b != 0 then failwith "b must divide de state size" ;
+  if state_size mod b != 0 then failwith "b must divide the state size" ;
   let m = state_size / b in
   let ctxt = P.allocate_ctxt parameters in
   let () = P.set_state ctxt input in

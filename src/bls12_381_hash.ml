@@ -9,5 +9,5 @@ end
 
 module Mode = struct
   module Jive = Jive
-  module Sponge = Sponge
+  (* module Sponge = Sponge *)
 end
