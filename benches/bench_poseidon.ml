@@ -1,19 +1,21 @@
 open Core_bench
 
 let t1 =
-  let open Bls12_381_hash.Poseidon.Parameters in
+  let open Bls12_381_hash.Permutation.Poseidon.Parameters in
   let name = "Benchmark one permutation of Poseidon128" in
   let state =
     Array.init security_128_state_size_3.state_size (fun _ ->
         Bls12_381.Fr.random ())
   in
-  let ctxt = Bls12_381_hash.Poseidon.allocate_ctxt security_128_state_size_3 in
-  let () = Bls12_381_hash.Poseidon.set_state ctxt state in
+  let ctxt =
+    Bls12_381_hash.Permutation.Poseidon.allocate_ctxt security_128_state_size_3
+  in
+  let () = Bls12_381_hash.Permutation.Poseidon.set_state ctxt state in
   Bench.Test.create ~name (fun () ->
-      Bls12_381_hash.Poseidon.apply_permutation ctxt)
+      Bls12_381_hash.Permutation.Poseidon.apply_permutation ctxt)
 
 let create_bench nb_of_full_rounds nb_of_partial_rounds state_size batch_size =
-  let open Bls12_381_hash.Poseidon.Parameters in
+  let open Bls12_381_hash.Permutation.Poseidon.Parameters in
   let ark_length = state_size * (nb_of_full_rounds + nb_of_partial_rounds) in
   let ark = Array.init ark_length (fun _ -> Bls12_381.Fr.random ()) in
   let mds =
@@ -30,8 +32,8 @@ let create_bench nb_of_full_rounds nb_of_partial_rounds state_size batch_size =
     }
   in
   let state = Array.init state_size (fun _ -> Bls12_381.Fr.random ()) in
-  let ctxt = Bls12_381_hash.Poseidon.allocate_ctxt parameters in
-  let () = Bls12_381_hash.Poseidon.set_state ctxt state in
+  let ctxt = Bls12_381_hash.Permutation.Poseidon.allocate_ctxt parameters in
+  let () = Bls12_381_hash.Permutation.Poseidon.set_state ctxt state in
   let name =
     Printf.sprintf
       "Benchmark Poseidon: width = %d, partial = %d, full = %d, batch size = %d"
@@ -42,7 +44,7 @@ let create_bench nb_of_full_rounds nb_of_partial_rounds state_size batch_size =
   in
   let t =
     Bench.Test.create ~name (fun () ->
-        Bls12_381_hash.Poseidon.apply_permutation ctxt)
+        Bls12_381_hash.Permutation.Poseidon.apply_permutation ctxt)
   in
   t
 
@@ -58,7 +60,7 @@ let bench_neptunus =
         Array.init state_size (fun _ -> Bls12_381.Fr.random ()))
   in
   let state = Array.init state_size (fun _ -> Bls12_381.Fr.random ()) in
-  let open Bls12_381_hash.Poseidon.Parameters in
+  let open Bls12_381_hash.Permutation.Poseidon.Parameters in
   let parameters =
     { state_size;
       batch_size;
@@ -68,11 +70,11 @@ let bench_neptunus =
       linear_layer = mds
     }
   in
-  let ctxt = Bls12_381_hash.Poseidon.allocate_ctxt parameters in
-  let () = Bls12_381_hash.Poseidon.set_state ctxt state in
+  let ctxt = Bls12_381_hash.Permutation.Poseidon.allocate_ctxt parameters in
+  let () = Bls12_381_hash.Permutation.Poseidon.set_state ctxt state in
   let name = "Benchmark Neptunus" in
   Bench.Test.create ~name (fun () ->
-      Bls12_381_hash.Poseidon.apply_permutation ctxt)
+      Bls12_381_hash.Permutation.Poseidon.apply_permutation ctxt)
 
 let command = Bench.make_command (t1 :: [bench_neptunus])
 

@@ -54,7 +54,7 @@ let test_vectors_anemoi128_1 () =
       let x1 = Bls12_381.Fr.of_string x1_s in
       let x2 = Bls12_381.Fr.of_string x2_s in
       let exp_res = Bls12_381.Fr.of_string exp_res_s in
-      let res = Bls12_381_hash.Anemoi.jive128_1 x1 x2 in
+      let res = Bls12_381_hash.Permutation.Anemoi.jive128_1 x1 x2 in
       if not (Bls12_381.Fr.eq res exp_res) then
         Alcotest.failf
           "Expected result = %s, computed result = %s, input = (%s, %s)"
@@ -117,12 +117,12 @@ let test_vectors_anemoi128_2 () =
       let exp_res_y2 = Bls12_381.Fr.of_string exp_res_y2_s in
       let state = [| x1; x2; y1; y2 |] in
       let ctxt =
-        Bls12_381_hash.Anemoi.allocate_ctxt
-          Bls12_381_hash.Anemoi.Parameters.security_128_state_size_4
+        Bls12_381_hash.Permutation.Anemoi.allocate_ctxt
+          Bls12_381_hash.Permutation.Anemoi.Parameters.security_128_state_size_4
       in
-      let () = Bls12_381_hash.Anemoi.set_state ctxt state in
-      let () = Bls12_381_hash.Anemoi.apply_permutation ctxt in
-      let output = Bls12_381_hash.Anemoi.get_state ctxt in
+      let () = Bls12_381_hash.Permutation.Anemoi.set_state ctxt state in
+      let () = Bls12_381_hash.Permutation.Anemoi.apply_permutation ctxt in
+      let output = Bls12_381_hash.Permutation.Anemoi.get_state ctxt in
       let res_x1, res_x2, res_y1, res_y2 =
         (output.(0), output.(1), output.(2), output.(3))
       in
@@ -204,12 +204,12 @@ let test_vectors_anemoi128_3 () =
       let exp_res_y3 = Bls12_381.Fr.of_string exp_res_y3_s in
       let state = [| x1; x2; x3; y1; y2; y3 |] in
       let ctxt =
-        Bls12_381_hash.Anemoi.allocate_ctxt
-          Bls12_381_hash.Anemoi.Parameters.security_128_state_size_6
+        Bls12_381_hash.Permutation.Anemoi.allocate_ctxt
+          Bls12_381_hash.Permutation.Anemoi.Parameters.security_128_state_size_6
       in
-      let () = Bls12_381_hash.Anemoi.set_state ctxt state in
-      let () = Bls12_381_hash.Anemoi.apply_permutation ctxt in
-      let output = Bls12_381_hash.Anemoi.get_state ctxt in
+      let () = Bls12_381_hash.Permutation.Anemoi.set_state ctxt state in
+      let () = Bls12_381_hash.Permutation.Anemoi.apply_permutation ctxt in
+      let output = Bls12_381_hash.Permutation.Anemoi.get_state ctxt in
       let res_x1, res_x2, res_x3, res_y1, res_y2, res_y3 =
         (output.(0), output.(1), output.(2), output.(3), output.(4), output.(5))
       in
@@ -293,12 +293,12 @@ let test_vectors_anemoi128_4 () =
       let exp_res_y4 = Bls12_381.Fr.of_string exp_res_y4_s in
       let state = [| x1; x2; x3; x4; y1; y2; y3; y4 |] in
       let ctxt =
-        Bls12_381_hash.Anemoi.(
+        Bls12_381_hash.Permutation.Anemoi.(
           allocate_ctxt Parameters.security_128_state_size_8)
       in
-      let () = Bls12_381_hash.Anemoi.set_state ctxt state in
-      let () = Bls12_381_hash.Anemoi.apply_permutation ctxt in
-      let output = Bls12_381_hash.Anemoi.get_state ctxt in
+      let () = Bls12_381_hash.Permutation.Anemoi.set_state ctxt state in
+      let () = Bls12_381_hash.Permutation.Anemoi.apply_permutation ctxt in
+      let output = Bls12_381_hash.Permutation.Anemoi.get_state ctxt in
       let res_x1, res_x2, res_x3, res_x4, res_y1, res_y2, res_y3, res_y4 =
         ( output.(0),
           output.(1),
@@ -365,10 +365,12 @@ let test_state_functions () =
   in
   let state_size = 2 * l in
   let state = Array.init state_size (fun _ -> Bls12_381.Fr.random ()) in
-  let parameters = Bls12_381_hash.Anemoi.Parameters.create 128 state_size mds in
-  let ctxt = Bls12_381_hash.Anemoi.allocate_ctxt parameters in
-  let () = Bls12_381_hash.Anemoi.set_state ctxt state in
-  let output = Bls12_381_hash.Anemoi.get_state ctxt in
+  let parameters =
+    Bls12_381_hash.Permutation.Anemoi.Parameters.create 128 state_size mds
+  in
+  let ctxt = Bls12_381_hash.Permutation.Anemoi.allocate_ctxt parameters in
+  let () = Bls12_381_hash.Permutation.Anemoi.set_state ctxt state in
+  let output = Bls12_381_hash.Permutation.Anemoi.get_state ctxt in
   if not (Array.for_all2 Bls12_381.Fr.eq state output) then
     Alcotest.failf
       "Exp: [%s], computed: [%s]"
@@ -383,25 +385,42 @@ let test_anemoi_generic_with_l_one_is_anemoi_jive128_1 () =
   let state_size = 2 in
   let state = Array.init state_size (fun _ -> Bls12_381.Fr.random ()) in
   let ctxt =
-    Bls12_381_hash.Anemoi.(allocate_ctxt Parameters.security_128_state_size_2)
+    Bls12_381_hash.Permutation.Anemoi.(
+      allocate_ctxt Parameters.security_128_state_size_2)
   in
-  let () = Bls12_381_hash.Anemoi.set_state ctxt state in
-  let () = Bls12_381_hash.Anemoi.apply_permutation ctxt in
-  let output = Bls12_381_hash.Anemoi.get_state ctxt in
+  let () = Bls12_381_hash.Permutation.Anemoi.set_state ctxt state in
+  let () = Bls12_381_hash.Permutation.Anemoi.apply_permutation ctxt in
+  let output = Bls12_381_hash.Permutation.Anemoi.get_state ctxt in
   assert (
     Bls12_381.Fr.eq
-      (Bls12_381_hash.Anemoi.jive128_1 state.(0) state.(1))
+      (Bls12_381_hash.Permutation.Anemoi.jive128_1 state.(0) state.(1))
       Bls12_381.Fr.(state.(0) + state.(1) + output.(0) + output.(1)))
 
 let test_compute_number_of_rounds () =
-  assert (Bls12_381_hash.Anemoi.Parameters.compute_number_of_rounds 2 128 = 19) ;
-  assert (Bls12_381_hash.Anemoi.Parameters.compute_number_of_rounds 4 128 = 12) ;
-  assert (Bls12_381_hash.Anemoi.Parameters.compute_number_of_rounds 6 128 = 10) ;
-  assert (Bls12_381_hash.Anemoi.Parameters.compute_number_of_rounds 8 128 = 10) ;
-  assert (Bls12_381_hash.Anemoi.Parameters.compute_number_of_rounds 2 256 = 35) ;
-  assert (Bls12_381_hash.Anemoi.Parameters.compute_number_of_rounds 4 256 = 20) ;
-  assert (Bls12_381_hash.Anemoi.Parameters.compute_number_of_rounds 6 256 = 15) ;
-  assert (Bls12_381_hash.Anemoi.Parameters.compute_number_of_rounds 8 256 = 14)
+  assert (
+    Bls12_381_hash.Permutation.Anemoi.Parameters.compute_number_of_rounds 2 128
+    = 19) ;
+  assert (
+    Bls12_381_hash.Permutation.Anemoi.Parameters.compute_number_of_rounds 4 128
+    = 12) ;
+  assert (
+    Bls12_381_hash.Permutation.Anemoi.Parameters.compute_number_of_rounds 6 128
+    = 10) ;
+  assert (
+    Bls12_381_hash.Permutation.Anemoi.Parameters.compute_number_of_rounds 8 128
+    = 10) ;
+  assert (
+    Bls12_381_hash.Permutation.Anemoi.Parameters.compute_number_of_rounds 2 256
+    = 35) ;
+  assert (
+    Bls12_381_hash.Permutation.Anemoi.Parameters.compute_number_of_rounds 4 256
+    = 20) ;
+  assert (
+    Bls12_381_hash.Permutation.Anemoi.Parameters.compute_number_of_rounds 6 256
+    = 15) ;
+  assert (
+    Bls12_381_hash.Permutation.Anemoi.Parameters.compute_number_of_rounds 8 256
+    = 14)
 
 let test_anemoi_generate_constants () =
   let l = 1 in
@@ -485,7 +504,9 @@ let test_anemoi_generate_constants () =
            "25996950265608465541351207283024962044374873682152889814392533334239395044136"
       |]
   in
-  let res = Bls12_381_hash.Anemoi.Parameters.generate_constants nb_rounds l in
+  let res =
+    Bls12_381_hash.Permutation.Anemoi.Parameters.generate_constants nb_rounds l
+  in
   assert (Array.for_all2 Bls12_381.Fr.eq exp_res res)
 
 let () =

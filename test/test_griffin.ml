@@ -1,16 +1,20 @@
 let test_state_getter_setter () =
   let parameters =
-    Bls12_381_hash.Griffin.Parameters.security_128_state_size_3
+    Bls12_381_hash.Permutation.Griffin.Parameters.security_128_state_size_3
   in
-  let ctxt = Bls12_381_hash.Griffin.allocate_ctxt parameters in
+  let ctxt = Bls12_381_hash.Permutation.Griffin.allocate_ctxt parameters in
 
   let state =
-    Array.init parameters.Bls12_381_hash.Griffin.Parameters.state_size (fun _ ->
-        Bls12_381.Fr.random ())
+    Array.init
+      parameters.Bls12_381_hash.Permutation.Griffin.Parameters.state_size
+      (fun _ -> Bls12_381.Fr.random ())
   in
-  let () = Bls12_381_hash.Griffin.set_state ctxt state in
+  let () = Bls12_381_hash.Permutation.Griffin.set_state ctxt state in
   assert (
-    Array.for_all2 Bls12_381.Fr.eq state (Bls12_381_hash.Griffin.get_state ctxt))
+    Array.for_all2
+      Bls12_381.Fr.eq
+      state
+      (Bls12_381_hash.Permutation.Griffin.get_state ctxt))
 
 let test_vectors_griffin_3 () =
   (* Generated from https://extgit.iaik.tugraz.at/krypto/zkfriendlyhashzoo *)
@@ -46,12 +50,15 @@ let test_vectors_griffin_3 () =
       let exp_res2 = Bls12_381.Fr.of_string exp_res2_s in
       let exp_res3 = Bls12_381.Fr.of_string exp_res3_s in
       let ctxt =
-        Bls12_381_hash.Griffin.allocate_ctxt
-          Bls12_381_hash.Griffin.Parameters.security_128_state_size_3
+        Bls12_381_hash.Permutation.Griffin.allocate_ctxt
+          Bls12_381_hash.Permutation.Griffin.Parameters
+          .security_128_state_size_3
       in
-      let () = Bls12_381_hash.Griffin.set_state ctxt [| x1; x2; x3 |] in
-      let () = Bls12_381_hash.Griffin.apply_permutation ctxt in
-      let res = Bls12_381_hash.Griffin.get_state ctxt in
+      let () =
+        Bls12_381_hash.Permutation.Griffin.set_state ctxt [| x1; x2; x3 |]
+      in
+      let () = Bls12_381_hash.Permutation.Griffin.apply_permutation ctxt in
+      let res = Bls12_381_hash.Permutation.Griffin.get_state ctxt in
       let res1, res2, res3 = (res.(0), res.(1), res.(2)) in
       let b =
         Bls12_381.Fr.eq exp_res1 res1
@@ -95,12 +102,14 @@ let test_vectors_griffin_4 () =
       let exp_res3 = Bls12_381.Fr.of_string exp_res3_s in
       let exp_res4 = Bls12_381.Fr.of_string exp_res4_s in
       let ctxt =
-        Bls12_381_hash.Griffin.(
+        Bls12_381_hash.Permutation.Griffin.(
           allocate_ctxt Parameters.security_128_state_size_4)
       in
-      let () = Bls12_381_hash.Griffin.set_state ctxt [| x1; x2; x3; x4 |] in
-      let () = Bls12_381_hash.Griffin.apply_permutation ctxt in
-      let res = Bls12_381_hash.Griffin.get_state ctxt in
+      let () =
+        Bls12_381_hash.Permutation.Griffin.set_state ctxt [| x1; x2; x3; x4 |]
+      in
+      let () = Bls12_381_hash.Permutation.Griffin.apply_permutation ctxt in
+      let res = Bls12_381_hash.Permutation.Griffin.get_state ctxt in
       let res1, res2, res3, res4 = (res.(0), res.(1), res.(2), res.(3)) in
       let b =
         Bls12_381.Fr.eq exp_res1 res1
