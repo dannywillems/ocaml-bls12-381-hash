@@ -68,7 +68,7 @@ lint-c:
   script:
     - opam install depext --yes
     - opam install . --dry-run --deps-only --locked --with-test --with-doc --yes | awk '/-> installed/{print $3}' | xargs opam depext -iy
-    - opam install "core_bench<=v0.14.1" -y
+    - opam install core_bench -y
     - dune build
     - dune build @install
     - dune build @runtest
@@ -130,7 +130,7 @@ build:
 
     - opam install depext --yes
     - opam install . --dry-run --deps-only --locked --with-test --with-doc --yes | awk '/-> installed/{print $3}' | xargs opam depext -iy
-    - opam install "core_bench<=v0.14.1" -y
+    - opam install core_bench -y
     - dune build
     # For doc
     - opam install odoc -y
