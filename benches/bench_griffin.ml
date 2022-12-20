@@ -24,4 +24,4 @@ let command =
       t Bls12_381_hash.Permutation.Griffin.Parameters.security_128_state_size_4
     ]
 
-let () = Core.Command.run command
+let () = Command_unix.run command

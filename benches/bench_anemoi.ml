@@ -33,4 +33,4 @@ let t2 l =
 
 let command = Bench.make_command [t1; t2 1; t2 2; t2 3; t2 4; t2 5; t2 6; t2 10]
 
-let () = Core.Command.run command
+let () = Command_unix.run command

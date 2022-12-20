@@ -16,4 +16,4 @@ let t_state_size_3 =
 
 let command = Bench.make_command [t_state_size_3]
 
-let () = Core.Command.run command
+let () = Command_unix.run command

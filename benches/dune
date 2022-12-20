@@ -1,4 +1,5 @@
 (executables
  (names bench_rescue bench_anemoi bench_griffin bench_poseidon)
+ ; -w +3 does not turn deprecated warnings into errors
  (flags -w +3)
- (libraries bls12-381 bls12-381-hash core core_bench))
+ (libraries bls12-381 bls12-381-hash core core_bench core_unix.command_unix))

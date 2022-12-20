@@ -78,4 +78,4 @@ let bench_neptunus =
 
 let command = Bench.make_command (t1 :: [bench_neptunus])
 
-let () = Core.Command.run command
+let () = Command_unix.run command
