@@ -165,40 +165,6 @@ build:
   rules:
     - when: always
 
-build-ocaml-4.12-alpine-3.14:
-  <<: *build_definition_alpine
-  image: ocaml/opam:alpine-3.14-ocaml-4.12
-
-build-ocaml-4.13-alpine-3.14:
-  <<: *build_definition_alpine
-  image: ocaml/opam:alpine-3.14-ocaml-4.13
-
-build-ocaml-4.14-alpine-3.14:
-  <<: *build_definition_alpine
-  image: ocaml/opam:alpine-3.14-ocaml-4.14
-
-build-ocaml-5.0-alpine-3.14:
-  <<: *build_definition_alpine
-  image: ocaml/opam:alpine-3.14-ocaml-5.0
-  allow_failure: true
-
-build-ocaml-4.12-alpine-3.15:
-  <<: *build_definition_alpine
-  image: ocaml/opam:alpine-3.15-ocaml-4.12
-
-build-ocaml-4.13-alpine-3.15:
-  <<: *build_definition_alpine
-  image: ocaml/opam:alpine-3.15-ocaml-4.13
-
-build-ocaml-4.14-alpine-3.15:
-  <<: *build_definition_alpine
-  image: ocaml/opam:alpine-3.15-ocaml-4.14
-
-build-ocaml-5.0-alpine-3.15:
-  <<: *build_definition_alpine
-  image: ocaml/opam:alpine-3.15-ocaml-5.0
-  allow_failure: true
-
 build-ocaml-4.12-alpine-3.16:
   <<: *build_definition_alpine
   image: ocaml/opam:alpine-3.16-ocaml-4.12
