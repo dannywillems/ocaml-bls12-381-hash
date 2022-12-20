@@ -31,7 +31,7 @@ lint:
   stage: lint
   image: ocaml/opam:debian-ocaml-4.12
   before_script:
-    - opam install ocamlformat.0.20.1
+    - opam install ocamlformat.$(awk -F = '$1 == "version" {print $2}' .ocamlformat)
   script:
     - dune build @fmt
   rules:
