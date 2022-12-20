@@ -2,6 +2,7 @@
 # _opam and _build directory.
 variables:
   IMAGE_WITH_CACHE: "ocaml/opam:debian-testing-opam"
+  OPAM_PACKAGE: "bls12-381-hash"
   OCAML_COMPILER: "4.14.0"
   # A workaround against a bug in gitlab-runner's default
   # unzipping implementation, which partially breaks caching for the dune _build cache.
@@ -244,11 +245,11 @@ opam-install-and-remove:
     - opam repository set-url default https://opam.ocaml.org
     - opam update
   script:
-    - opam pin add bls12-381-hash.dev . --no-action
-    - opam depext bls12-381-hash.dev -i -y -v
-    - opam install bls12-381-hash.dev -y -v --deps-only
-    - opam install bls12-381-hash.dev -y -v
-    - opam remove -a -y bls12-381-hash.dev
+    - opam pin add ${OPAM_PACKAGE}.dev . --no-action
+    - opam depext ${OPAM_PACKAGE}.dev -i -y -v
+    - opam install ${OPAM_PACKAGE}.dev -y -v --deps-only
+    - opam install ${OPAM_PACKAGE}.dev -y -v
+    - opam remove -a -y ${OPAM_PACKAGE}.dev
   rules:
     - when: always
 
@@ -266,11 +267,11 @@ opam-install-and-remove-local-switch:
     - opam repository set-url default https://opam.ocaml.org
     - opam update
   script:
-    - opam pin add bls12-381-hash.dev . --no-action
-    - opam depext bls12-381-hash.dev -i -y -v
-    - opam install bls12-381-hash.dev -y -v --deps-only
-    - opam install bls12-381-hash.dev -y -v
-    - opam remove -a -y bls12-381-hash.dev
+    - opam pin add ${OPAM_PACKAGE}.dev . --no-action
+    - opam depext ${OPAM_PACKAGE}.dev -i -y
+    - opam install ${OPAM_PACKAGE}.dev -y --deps-only
+    - opam install ${OPAM_PACKAGE}.dev -y
+    - opam remove -a -y ${OPAM_PACKAGE}.dev
   rules:
     - when: always
 
