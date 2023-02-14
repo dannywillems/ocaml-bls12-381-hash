@@ -131,11 +131,14 @@ module Parameters = struct
     { security; state_size; nb_rounds; round_constants; linear_layer }
 
   let security_128_state_size_2 =
+    let nb_rounds = 21 in
+    let state_size = 2 in
+    let l = state_size / 2 in
     { security = 128;
-      nb_rounds = 19;
-      state_size = 2;
+      nb_rounds;
+      state_size;
       linear_layer = Bls12_381.Fr.[| [| one; g |]; [| g; square g + one |] |];
-      round_constants = generate_constants 19 1
+      round_constants = generate_constants nb_rounds l
     }
 
   let security_141_state_size_2 =
@@ -147,31 +150,40 @@ module Parameters = struct
     }
 
   let security_128_state_size_4 =
+    let nb_rounds = 14 in
+    let state_size = 4 in
+    let l = state_size / 2 in
     { security = 128;
-      nb_rounds = 12;
-      state_size = 4;
+      nb_rounds;
+      state_size;
       linear_layer = Bls12_381.Fr.[| [| one; g |]; [| g; square g + one |] |];
-      round_constants = generate_constants 12 2
+      round_constants = generate_constants nb_rounds l
     }
 
   let security_128_state_size_6 =
+    let nb_rounds = 12 in
+    let state_size = 6 in
+    let l = state_size / 2 in
     { security = 128;
-      nb_rounds = 10;
-      state_size = 6;
+      nb_rounds;
+      state_size;
       linear_layer =
         Bls12_381.Fr.
           [| [| g + one; one; g + one |];
              [| one; one; g |];
              [| g; one; one |]
           |];
-      round_constants = generate_constants 10 3
+      round_constants = generate_constants nb_rounds l
     }
 
   let security_128_state_size_8 =
+    let nb_rounds = 12 in
+    let state_size = 8 in
+    let l = state_size / 2 in
     { security = 128;
-      nb_rounds = 10;
-      state_size = 8;
-      round_constants = generate_constants 10 4;
+      nb_rounds;
+      state_size;
+      round_constants = generate_constants nb_rounds l;
       linear_layer =
         Bls12_381.Fr.
           [| [| one; one + g; g; g |];
