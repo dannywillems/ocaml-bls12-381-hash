@@ -164,7 +164,9 @@ module Permutation : sig
     include S.PERMUTATION with type parameters = Parameters.t
 
     (** [apply_linear_layer ctxt] applies the linear layer on the state. The
-      context is modified *)
+        context is modified. Note that the linear layer includes the pseudo
+        Hadamard transform.
+    *)
     val apply_linear_layer : ctxt -> unit
 
     (** [apply_flystel ctxt] applies the Flystel construction on the context.
