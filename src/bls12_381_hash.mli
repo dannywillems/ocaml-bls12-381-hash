@@ -104,7 +104,7 @@ module Permutation : sig
 
       (** For BLS12-381, it is
         [14981678621464625851270783002338847382197300714436467949315331057125308909861]
-    *)
+      *)
       val delta : Bls12_381.Fr.t
 
       (** First generator of the scalar field of BLS12-381, i.e. [7] *)
@@ -137,27 +137,27 @@ module Permutation : sig
 
       (** Parameters for the permutation Anemoi for a state size of [m = 2] (i.e.
         [l = 1]) and 128 bits of security given in the paper
-    *)
+      *)
       val security_128_state_size_2 : t
 
       (** Parameters for the permutation Anemoi for a state size of [m = 2] (i.e.
         [l = 1]) and 141 bits of security
-    *)
+      *)
       (* val security_141_state_size_2 : t *)
 
       (** Parameters for the permutation Anemoi for a state size of [m = 4] (i.e.
         [l = 2]) and 128 bits of security given in the paper
-    *)
+      *)
       val security_128_state_size_4 : t
 
       (** Parameters for the permutation Anemoi for a state size of [m = 6] (i.e.
         [l = 3]) and 128 bits of security given in the paper
-    *)
+      *)
       val security_128_state_size_6 : t
 
       (** Parameters for the permutation Anemoi for a state size of [m = 8] (i.e.
         [l = 4]) and 128 bits of security given in the paper
-    *)
+      *)
       val security_128_state_size_8 : t
     end
 
@@ -170,15 +170,15 @@ module Permutation : sig
     val apply_linear_layer : ctxt -> unit
 
     (** [apply_flystel ctxt] applies the Flystel construction on the context.
-      The context is modified *)
+        The context is modified *)
     val apply_flystel : ctxt -> unit
 
     (** [apply_constants_addition ctxt round] applies the constant addition for the
-      round [round]. The context is modified *)
+        round [round]. The context is modified *)
     val apply_constants_addition : ctxt -> int -> unit
 
     (** [apply_one_round ctxt round] applies the round [round] on the state. The
-      context is modified *)
+        context is modified *)
     val apply_one_round : ctxt -> int -> unit
 
     (** [jive128_1 x y] calls the permutation Anemoi for [l = 1] with the state
