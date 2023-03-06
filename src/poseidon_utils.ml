@@ -201,7 +201,7 @@ end
 
 (* Partial copy of
    https://gitlab.com/dannywillems/ocaml-polynomial/-/blob/950dc70e8c3070918329d1e7e722f8361c25e182/src/polynomial.ml#L233 *)
-module MakePoly (R : Ff_sig.PRIME) = struct
+module MakePoly (R : Bls12_381.Ff_sig.PRIME) = struct
   (* We encode the polynomials as a list with decreasing degree.
      Invariants to respect for the type:
      - all coefficients are non null.

@@ -21,3 +21,6 @@ x-ci-accept-failures: [
   "centos-7"
   "oraclelinux-7"
 ]
+pin-depends: [
+  ["bls12-381.6.0.0" "git+https://gitlab.com/nomadic-labs/cryptography/ocaml-bls12-381#vdum@ff"]
+]
